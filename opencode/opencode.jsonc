@@ -1,0 +1,108 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    // 默认主模型。字段名必须是 `model`（单数），不是 `models`。
+    // 实际可用模型以 opencode 内的 `/models` 列表为准。
+    "model": "openai/gpt-5.6-sol",
+    // 轻量模型：用于标题生成、摘要等低价值辅助任务，避免占用主 Codex 模型额度。
+    "small_model": "openai/gpt-5.4-mini-fast",
+    // 长会话省 token：自动压缩上下文，并丢弃旧工具输出。
+    // tail_turns=2 保留最近两轮完整上下文，兼顾省 token 和连续性。
+    "compaction": {
+        "auto": true,
+        "prune": true,
+        "reserved": 10000,
+        "tail_turns": 2
+    },
+    "provider": {
+        "openai": {
+            // OpenAI/Codex 订阅模型的全局覆盖项。
+            // OpenAI provider 使用 reasoningEffort/textVerbosity；不要混用 OpenRouter 的 provider.allow_fallbacks。
+            "name": "openai",
+            "models": {
+                "gpt-5.5": {
+                    "id": "gpt-5.5",
+                    "options": {
+                        "temperature": 0.2,
+                        "reasoningEffort": "low",
+                        "textVerbosity": "low"
+                    }
+                }
+            }
+        }
+    },
+    "permission": {
+        "skill": {
+            "*": "ask"
+        },
+        "read": {
+            "*": "allow",
+            "*.env": "deny",
+            "*.env.*": "deny",
+            "*.pem": "deny",
+            "*.key": "deny"
+        },
+        "bash": {
+            "*": "allow",
+            "rm *": "deny",
+            "git push *": "deny"
+        },
+        "edit": {
+            "*": "allow"
+        },
+        "external_directory": {
+            "~/projects/shared-libs/**": "ask"
+        }
+    },
+    "mcp": {
+        "agent-browser": {
+            "type": "local",
+            "command": [
+                "agent-browser",
+                "mcp"
+            ],
+            "enabled": true
+        },
+        "context7": {
+            "type": "remote",
+            "url": "https://mcp.context7.com/mcp",
+            "enabled": true
+        },
+        "grafana": {
+            "type": "local",
+            "command": [
+                "uvx",
+                "mcp-grafana",
+                "--disable-write"
+            ],
+            "enabled": true,
+            "environment": {
+                "GRAFANA_URL": "{env:GRAFANA_URL}",
+                "GRAFANA_SERVICE_ACCOUNT_TOKEN": "{env:GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+            }
+        },
+        "filesystem": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "@modelcontextprotocol/server-filesystem"
+            ],
+            "enabled": true
+        }
+    },
+    "watcher": {
+        "ignore": [
+            "node_modules/**",
+            "dist/**",
+            ".git/**",
+            "*.lock",
+            "**/*.log",
+            ".cache/**",
+            "build/**",
+            "__pycache__/**",
+            ".venv/**",
+            "venv/**"
+        ]
+    },
+    "plugin": []
+}
