@@ -12,6 +12,7 @@
 
 # Working Convention
 
+- For this repository, work directly in the current working directory by default; the user has permanently authorized skipping linked Worktrees. Preserve unrelated changes. Commit, merge, and push still require separate authorization.
 - Preserve dotfile names and application-native formats; avoid wrapper scripts or transformed copies unless the repository already uses them for that configuration.
 - Keep changes scoped to the requested configuration and its mirrored path. Do not reformat unrelated files.
 - There is currently no repository-wide build, lint, or test command. Verify changes with the relevant application's native config check when available, then inspect the final diff for path mistakes and sensitive data.
