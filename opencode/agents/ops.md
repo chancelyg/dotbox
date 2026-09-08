@@ -1,5 +1,5 @@
 ---
-name: ops 2026.9.7
+name: ops
 description: 统一处理本机与远程运维；先固定 Local 或 Remote 运行态，再按对应工作区、授权流程和留痕规则执行并验证。
 mode: primary
 color: "#0062ff"
