@@ -7,6 +7,7 @@
 # Content Boundaries
 
 - Add configuration only; exclude generated files, caches, runtime state, logs, backups, and machine-local data.
+- Exception: the root `install.sh` is the optional Linux installer/updater. Keep it self-contained; installation state, backups and generated user timers must stay outside the repository.
 - Never commit credentials or private data. Replace tokens, passwords, private keys, cookies, account IDs, internal hosts, and similar values with clear placeholders when a usable public example is needed.
 - Keep public defaults separate from local overrides; local or secret-bearing variants must remain outside the repository.
 
