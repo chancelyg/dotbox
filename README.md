@@ -8,6 +8,7 @@
 
 - `kitty/kitty.conf` → `$HOME/.config/kitty/kitty.conf`
 - `opencode/agents/` → `$HOME/.config/opencode/agents/`
+- `opencode/skills/` → `$HOME/.config/opencode/skills/`
 
 ## 使用
 
@@ -29,6 +30,7 @@ bash "$HOME/.dotbox/install.sh"
 - `opencode/AGENTS.md`
 - `opencode/agents/coding.md`、`ops.md`、`simplicity-reviewer.md`
 - `opencode/commands/init.md`
+- `opencode/skills/` 下列出的开发技能及第三方来源、许可证文件
 - `kitty/kitty.conf`
 
 不安装 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。`kitty/current-theme.conf` 等本地主题和生成文件也不受管理，更新 `kitty.conf` 时不会删除它们。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录。首次同名文件不同需确认后备份；后续发现受管文件被本地修改或删除会停止，重新安装也不会绕过保护。需要发布本机修改时，先手动更新仓库并 commit/push，再让其他设备自动拉取；安装器不会自动上传。源文件删除时，仅移除仍与基线一致的受管副本。
@@ -54,6 +56,17 @@ Linux 自动更新使用 `systemd --user` 的 `dotbox-update.timer`：用户管�
 使用 Coding 模式时，可一并安装 `opencode/agents/coding.md` 和 `opencode/agents/simplicity-reviewer.md` 到 `$HOME/.config/opencode/agents/`。修改后退出并重启 OpenCode，使代理定义重新加载。
 
 Coding 对正式 Plan 执行“规划 → 简约性挑战 → 修订 → 实现 → 验证”：每轮使用新的只读 reviewer 会话，合理方案直接放行，同一任务最多 5 轮。轮数是主代理提示词约束，不是程序级强制限制；计划审查不替代实际测试。子代理未配置、未加载、无调用权限或调用失败时，Coding 明确说明未进行独立审查，退回自审后继续；已知有效阻塞问题仍须解决，不因跳过或达到上限而自动放行。具体规则见 `opencode/agents/coding.md`。
+
+### OpenCode 开发技能
+
+安装器会将以下技能复制到 `$HOME/.config/opencode/skills/`，由 OpenCode 根据任务描述按需加载；它们只提供领域知识，不替代 Coding 的计划、Worktree、验证或 Git 流程：
+
+- `responsive-design`：容器查询、流式排版、Grid/Flexbox 和响应式媒体。
+- `accessibility-compliance`：WCAG 2.2、语义 HTML、键盘与焦点、ARIA 和辅助技术支持。
+- `api-design-principles`：REST/GraphQL 资源、契约、错误、分页和版本演进。
+- `postgresql-table-design`：PostgreSQL 类型、约束、索引、分区和安全模式演进。
+
+技能来自 MIT 许可的 [`wshobson/agents`](https://github.com/wshobson/agents)，固定来源、引入范围和许可文本见 `opencode/skills/THIRD_PARTY_NOTICES.md`。技能或代理文件更新后，需要退出并重新启动 OpenCode。
 
 ## 公开范围
 

@@ -56,7 +56,17 @@ state=$(normalize_absolute "$state_home/dotbox")
 unit=dotbox-update
 label=io.github.chancelyg.dotbox-update
 files=(opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
-       opencode/agents/simplicity-reviewer.md opencode/commands/init.md kitty/kitty.conf)
+       opencode/agents/simplicity-reviewer.md opencode/commands/init.md
+       opencode/skills/responsive-design/SKILL.md
+       opencode/skills/responsive-design/references/details.md
+       opencode/skills/accessibility-compliance/SKILL.md
+       opencode/skills/accessibility-compliance/references/details.md
+       opencode/skills/api-design-principles/SKILL.md
+       opencode/skills/api-design-principles/references/details.md
+       opencode/skills/postgresql-table-design/SKILL.md
+       opencode/skills/postgresql-table-design/references/details.md
+       opencode/skills/THIRD_PARTY_NOTICES.md
+       opencode/skills/LICENSES/wshobson-agents-MIT.txt kitty/kitty.conf)
 
 # 不沿链接覆盖文件，也不让本地状态或配置写回源码仓库。
 safe_path "$config"
