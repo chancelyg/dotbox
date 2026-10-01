@@ -30,7 +30,7 @@ bash "$HOME/.dotbox/install.sh"
 - `opencode/AGENTS.md`
 - `opencode/agents/coding.md`、`ops.md`、`simplicity-reviewer.md`
 - `opencode/commands/init.md`
-- `opencode/skills/` 下列出的开发技能及第三方来源、许可证文件
+- `opencode/skills/` 下列出的开发与运维技能及第三方来源、许可证文件
 - `kitty/kitty.conf`
 
 不安装 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。`kitty/current-theme.conf` 等本地主题和生成文件也不受管理，更新 `kitty.conf` 时不会删除它们。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录。首次同名文件不同需确认后备份；后续发现受管文件被本地修改或删除会停止，重新安装也不会绕过保护。需要发布本机修改时，先手动更新仓库并 commit/push，再让其他设备自动拉取；安装器不会自动上传。源文件删除时，仅移除仍与基线一致的受管副本。
@@ -67,6 +67,12 @@ Coding 对正式 Plan 执行“规划 → 简约性挑战 → 修订 → 实现 
 - `postgresql-table-design`：PostgreSQL 类型、约束、索引、分区和安全模式演进。
 
 技能来自 MIT 许可的 [`wshobson/agents`](https://github.com/wshobson/agents)，固定来源、引入范围和许可文本见 `opencode/skills/THIRD_PARTY_NOTICES.md`。技能或代理文件更新后，需要退出并重新启动 OpenCode。
+
+### OpenCode Ops 按需协议
+
+`opencode/agents/ops.md` 保留目标、授权、安全和验收规则；`opencode/skills/ops-workflows/SKILL.md` 按任务触发读取记忆维护、工作区与 Git、长任务的参考协议，不在每次排障时全量加载。该技能为本仓库维护，不属于上述第三方开发技能。
+
+安装器同时管理 Ops 代理、技能入口及三个参考文件；手动复制时也须一并安装到对应配置路径。未登记主机不自动触发初始化提问，High 双确认和连接确认保持不变。配置更新后退出并重启 OpenCode。
 
 ## 公开范围
 

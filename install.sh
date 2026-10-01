@@ -65,6 +65,10 @@ files=(opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
        opencode/skills/api-design-principles/references/details.md
        opencode/skills/postgresql-table-design/SKILL.md
        opencode/skills/postgresql-table-design/references/details.md
+       opencode/skills/ops-workflows/SKILL.md
+       opencode/skills/ops-workflows/references/memory.md
+       opencode/skills/ops-workflows/references/workspace-git.md
+       opencode/skills/ops-workflows/references/long-tasks.md
        opencode/skills/THIRD_PARTY_NOTICES.md
        opencode/skills/LICENSES/wshobson-agents-MIT.txt kitty/kitty.conf)
 
