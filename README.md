@@ -28,7 +28,7 @@ bash "$HOME/.dotbox/install.sh"
 安装时统一确认 OpenCode 和 Kitty，随后处理同名配置冲突，并询问是否启用每 6 小时自动更新（默认否；选择否会关闭当前平台已有的 dotbox 调度任务）。明确管理的文件仅为：
 
 - `opencode/AGENTS.md`
-- `opencode/agents/coding.md`、`ops.md`、`simplicity-reviewer.md`
+- `opencode/agents/coding.md`、`ops.md`、`plan-designer.md`、`simplicity-reviewer.md`
 - `opencode/commands/init.md`
 - `opencode/skills/` 下列出的开发与运维技能及第三方来源、许可证文件
 - `kitty/kitty.conf`
@@ -51,11 +51,17 @@ Linux 自动更新使用 `systemd --user` 的 `dotbox-update.timer`：用户管�
 
 安装版本、受管内容基线、批准脚本、最近检查及备份保存在 `${XDG_STATE_HOME:-$HOME/.local/state}/dotbox`，不写入仓库。配置或状态路径含符号链接、与仓库重叠时拒绝安装。普通应用错误会尝试恢复原配置，备份保留供手动恢复；断电或强制终止不保证自动恢复。备份不会自动清理，请按需自行管理。
 
-### OpenCode Coding 与计划审查
+### OpenCode Coding / Ops 与方案设计、审查
 
-使用 Coding 模式时，可一并安装 `opencode/agents/coding.md` 和 `opencode/agents/simplicity-reviewer.md` 到 `$HOME/.config/opencode/agents/`。修改后退出并重启 OpenCode，使代理定义重新加载。
+使用 Coding 或 Ops 模式时，可将对应代理与 `opencode/agents/plan-designer.md`、`opencode/agents/simplicity-reviewer.md` 一并安装到 `$HOME/.config/opencode/agents/`。`plan-designer` 是共享只读子代理，不覆盖 OpenCode 内置的主代理 `plan`。修改后退出并重启 OpenCode，使代理定义重新加载。
 
-Coding 对正式 Plan 执行“规划 → 简约性挑战 → 修订 → 实现 → 验证”：每轮使用新的只读 reviewer 会话，合理方案直接放行，同一任务最多 5 轮。轮数是主代理提示词约束，不是程序级强制限制；计划审查不替代实际测试。子代理未配置、未加载、无调用权限或调用失败时，Coding 明确说明未进行独立审查，退回自审后继续；已知有效阻塞问题仍须解决，不因跳过或达到上限而自动放行。具体规则见 `opencode/agents/coding.md`。
+正式规划执行“主代理取证 → `plan-designer` 设计候选方案 → 主代理核验并形成草案 → `simplicity-reviewer` 独立审查 → 修订与展示最终方案 → 原授权流程 → 实施与验证”。设计与审查分开：前者比较真实备选并检查合理性，后者独立检查草案，主代理保留最终裁决与授权管理。既有能力、官方接口与原生配置优先；非标准补丁须说明依据、影响、验证、回退、维护与退出条件，明确区分临时缓解和根因修复。
+
+设计默认单次新会话，只有关键输入改变才重新设计，不因每条审查意见自动回到设计代理；其 `READY` / `BLOCKED` 是候选设计状态，不表示授权或 reviewer 通过。reviewer 每轮使用新会话，同一计划阶段最多 5 轮，设计调用不计入此轮数。最终方案注明审查轮数和状态；轮数是提示词约束，不是程序级强制限制。子代理不可用时主代理明确说明未独立设计或审查，按对应标准自行处理；有效关键阻塞不因降级或达到上限自动放行。
+
+方案质量审查与执行授权分开：Coding 的正式 Plan 仍须用户确认；Ops 保留 Local / Low 的现有授权方式，High 仍分别确认方案与批准执行，连接确认也不变。两个子代理只在客户端读取明确参考范围，不执行命令、连接远端或写文件；运行状态和版本匹配的官方资料由主代理取证提供。已确认的同份最终方案不重启规划，实施后不自动重新调用；简单改动例外见 `coding.md` 与 `ops.md`，High 不豁免。提示词和配置检查不能证明模型始终给出合理方案，实际行为仍需验证。
+
+设计机制参考 [Superpowers brainstorming](https://github.com/obra/superpowers/blob/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills/brainstorming/SKILL.md) / [writing-plans](https://github.com/obra/superpowers/blob/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills/writing-plans/SKILL.md)、[Spec Kit planning](https://github.com/github/spec-kit/blob/838f1184d1b2ed254a99e8b818dbc23aa80a7f1f/templates/commands/plan.md) 和 [wshobson architect](https://github.com/wshobson/agents/blob/156b7a5e7a8b93642628a339ee4039c925b34c7f/plugins/ship-mate/agents/architect.md)；前两者是技能 / 命令工作流，后者是 agent。本仓库自行编写只读设计协议，不引入它们的写文件、提交、审批或平台流程。
 
 ### OpenCode 开发技能
 

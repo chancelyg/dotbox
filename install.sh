@@ -56,7 +56,8 @@ state=$(normalize_absolute "$state_home/dotbox")
 unit=dotbox-update
 label=io.github.chancelyg.dotbox-update
 files=(opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
-       opencode/agents/simplicity-reviewer.md opencode/commands/init.md
+       opencode/agents/plan-designer.md opencode/agents/simplicity-reviewer.md
+       opencode/commands/init.md
        opencode/skills/responsive-design/SKILL.md
        opencode/skills/responsive-design/references/details.md
        opencode/skills/accessibility-compliance/SKILL.md

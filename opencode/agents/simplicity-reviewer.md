@@ -1,5 +1,5 @@
 ---
-description: 对 Coding 的当前 Plan 进行一次独立简约性挑战，检查功能完整性、必要复杂度和可验证性；合理方案直接放行，不负责实现或调度循环。
+description: 对 Coding / Ops 的当前 Plan 进行一次独立简约性挑战，检查功能完整性、必要复杂度和可验证性；合理方案直接放行，不负责实现或调度循环。
 mode: subagent
 permission:
   "*": deny
@@ -55,4 +55,4 @@ permission:
 
 * `verdict` 仅为 `PASS`、`REVISE` 或 `BLOCKED`。`PASS` 的 `blockers` 必须为空；`REVISE` 表示存在有依据的必要修正；`BLOCKED` 表示缺少作出可靠判断所必需的事实。
 * `blockers` 按影响排序，最多 3 项；每项包含 `category`（`completeness`、`unnecessary_complexity`、`simpler_existing_pattern`、`unverifiable` 或 `missing_context`）、`target`（具体计划步骤）、`evidence`（需求、规则或代码依据）、`required_change`（最小必要修正或待补充事实）。
-* 非阻塞建议放入 `non_blocking_notes`，最多 2 项，没有则留空。不要用非阻塞建议迫使主代理继续循环；是否采纳和如何修订由 Coding 主代理裁决。
+* 非阻塞建议放入 `non_blocking_notes`，最多 2 项，没有则留空。不要用非阻塞建议迫使主代理继续循环；是否采纳和如何修订由调用它的主代理裁决。
