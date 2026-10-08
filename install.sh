@@ -56,6 +56,8 @@ state=$(normalize_absolute "$state_home/dotbox")
 unit=dotbox-update
 label=io.github.chancelyg.dotbox-update
 files=(opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
+       opencode/agents/planner.md
+       # 旧代理源已删除；保留路径仅供基线检查、安全退役、备份和回滚。
        opencode/agents/plan-designer.md opencode/agents/simplicity-reviewer.md
        opencode/commands/init.md
        opencode/skills/responsive-design/SKILL.md

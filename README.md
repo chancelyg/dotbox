@@ -28,7 +28,7 @@ bash "$HOME/.dotbox/install.sh"
 安装时统一确认 OpenCode 和 Kitty，随后处理同名配置冲突，并询问是否启用每 6 小时自动更新（默认否；选择否会关闭当前平台已有的 dotbox 调度任务）。明确管理的文件仅为：
 
 - `opencode/AGENTS.md`
-- `opencode/agents/coding.md`、`ops.md`、`plan-designer.md`、`simplicity-reviewer.md`
+- `opencode/agents/coding.md`、`ops.md`、`planner.md`
 - `opencode/commands/init.md`
 - `opencode/skills/` 下列出的开发与运维技能及第三方来源、许可证文件
 - `kitty/kitty.conf`
@@ -53,13 +53,23 @@ Linux 自动更新使用 `systemd --user` 的 `dotbox-update.timer`：用户管�
 
 ### OpenCode Coding / Ops 与方案设计、审查
 
-使用 Coding 或 Ops 模式时，可将对应代理与 `opencode/agents/plan-designer.md`、`opencode/agents/simplicity-reviewer.md` 一并安装到 `$HOME/.config/opencode/agents/`。`plan-designer` 是共享只读子代理，不覆盖 OpenCode 内置的主代理 `plan`。修改后退出并重启 OpenCode，使代理定义重新加载。
+Coding / Ops 默认自行查证、形成必要方案并按授权执行验证；不因正式 Plan、多文件、High、Skill 或普通失败自动启动子代理。只有用户明确调用 `@planner`、要求本轮设计并独立审查，或同意启用时，才启动完整流程；仅提及名称或询问用法不算启用。重要未决取舍可由主代理简短建议使用，不擅自调用。
 
-正式规划执行“主代理取证 → `plan-designer` 设计候选方案 → 主代理核验并形成草案 → `simplicity-reviewer` 独立审查 → 修订与展示最终方案 → 原授权流程 → 实施与验证”。设计与审查分开：前者比较真实备选并检查合理性，后者独立检查草案，主代理保留最终裁决与授权管理。既有能力、官方接口与原生配置优先；非标准补丁须说明依据、影响、验证、回退、维护与退出条件，明确区分临时缓解和根因修复。
+将 `opencode/agents/planner.md` 与 Coding / Ops 代理一并安装到 `$HOME/.config/opencode/agents/`，退出并重启 OpenCode。用户只需调用一次，例如：
 
-设计默认单次新会话，只有关键输入改变才重新设计，不因每条审查意见自动回到设计代理；其 `READY` / `BLOCKED` 是候选设计状态，不表示授权或 reviewer 通过。reviewer 每轮使用新会话，同一计划阶段最多 5 轮，设计调用不计入此轮数。最终方案注明审查轮数和状态；轮数是提示词约束，不是程序级强制限制。子代理不可用时主代理明确说明未独立设计或审查，按对应标准自行处理；有效关键阻塞不因降级或达到上限自动放行。
+```text
+@planner 为这次改动设计方案并独立审查
+```
 
-方案质量审查与执行授权分开：Coding 的正式 Plan 仍须用户确认；Ops 保留 Local / Low 的现有授权方式，High 仍分别确认方案与批准执行，连接仍需确认（主机管理的一次接入或批量确认见下文）。两个子代理只在客户端读取明确参考范围，不执行命令、连接远端或写文件；运行状态和版本匹配的官方资料由主代理取证提供。已确认的同份最终方案不重启规划，实施后不自动重新调用；简单改动例外见 `coding.md` 与 `ops.md`，High 不豁免。提示词和配置检查不能证明模型始终给出合理方案，实际行为仍需验证。
+一个代理定义包含 design / review 两阶段：默认设计，主代理复用结果、核验形成草案，随后自动以全新会话调用同一个 planner 的 `phase=review`，必要时裁决、修订及复审，最后展示 Plan、实际审查轮次 / 结论和关键边界。无需用户第二次 @。原设计的真实方案比较、证据和可行性检查，以及审查的完整性、必要性、复用、验证和简约性标准均保留，主代理保留最终裁决与授权管理。
+
+设计与每轮审查均为主会话下独立子会话，不复用 `task_id`；审查不接收设计推理或历轮争论，独立性指上下文而非不同模型。不让子代理自行递归调用，无需修改 OpenCode 的 `subagent_depth`，也不覆盖内置主代理 `plan`。原生机制依据 [OpenCode 1.18.35 agents](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/web/src/content/docs/agents.mdx) 与 [Task 源码](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/tool/task.ts)；使用其他版本时核对兼容性。
+
+`READY / BLOCKED` 是设计状态，`PASS / REVISE / BLOCKED` 是审查结论，不代表实施授权或实际验证通过。设计不计审查轮数，最多 5 轮审查，失败调用也计数；首轮 PASS 即结束，不为获得 PASS 空转或每轮重设计。未通过、修订后未复审、达到上限或代理不可用须如实呈现，不将自审记为独立 PASS；有效安全、授权或关键前提阻塞不因降级、轮数耗尽或用户确认消失。完整交接及边界协议见 `planner.md`。
+
+未启用时不例行报告未调用代理。启用也不改变 Coding 正式 Plan 确认、Ops Local / Low 授权、High 方案及执行双确认、连接确认或 Git 权限；已确认的同份 Plan 和实施中的普通修复不重启流程。触发、自动衔接和五轮限制是提示词协议，不是程序级保证；配置解析不能证明实际调用正确，须用调用轨迹验证，不宣称未测的行为成功。
+
+安装器保留 `plan-designer.md`、`simplicity-reviewer.md` 两个旧路径作为退役对象，不再提供其源定义；只删除有安装基线且仍与基线一致的副本，本地修改或删除仍会阻塞，无基线的个人同名文件不会自动清理。手动安装者应在确认归属后自行移除旧定义，不能盲删个人代理。安装脚本更新需审阅后重新批准，代理更新需重启 OpenCode。
 
 设计机制参考 [Superpowers brainstorming](https://github.com/obra/superpowers/blob/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills/brainstorming/SKILL.md) / [writing-plans](https://github.com/obra/superpowers/blob/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills/writing-plans/SKILL.md)、[Spec Kit planning](https://github.com/github/spec-kit/blob/838f1184d1b2ed254a99e8b818dbc23aa80a7f1f/templates/commands/plan.md) 和 [wshobson architect](https://github.com/wshobson/agents/blob/156b7a5e7a8b93642628a339ee4039c925b34c7f/plugins/ship-mate/agents/architect.md)；前两者是技能 / 命令工作流，后者是 agent。本仓库自行编写只读设计协议，不引入它们的写文件、提交、审批或平台流程。
 
@@ -80,13 +90,13 @@ Linux 自动更新使用 `systemd --user` 的 `dotbox-update.timer`：用户管�
 
 | 请求示例 | 行为 |
 | --- | --- |
-| 添加主机 demo，地址 example.com，端口 2222，用户 ubuntu | 从当前运维仓库获取公钥，准备安装命令与服务器指纹；一次确认后连接、身份核验，成功才登记 |
+| 添加主机 demo，地址 example.com，端口 2222，用户 ubuntu | 准备只显示待安装公钥、服务器指纹、服务器等级；一次简短确认后连接、核验，成功才登记 |
 | 删除主机 demo | 一次确认后只删本地登记，不连接、不撤销服务器公钥、不清理共享 SSH 配置或信任记录 |
 | 验证主机 demo | 默认检查本地参数、公钥、签名后端和已有信任，不登录、不自动修复 |
 | 验证 demo 的服务器指纹 | 确认网络采集范围后比对可信证据，不自动接受新密钥 |
 | 测试 demo / 全部主机连接 | 对当前清单中明确展示的固定集合一次确认，逐台全新认证与身份检查，不逐台弹窗、不扫描网段 |
 
-添加的正常路径是“提供参数 → 一张公钥安装与指纹核验确认卡 → 自动连接、验证和登记”。卡片分别展示客户端登录公钥和服务器主机指纹；网络扫描只能提供待核验指纹，用户须从服务器控制台或其他可信独立渠道比对，在独立终端安装公钥。确认卡明确包含这些前提、连接目标与本地写入范围后，回复“确认”即可，不再分别通知安装完成、批准验证和批准连接。公钥缺失、多候选、签名后端不可用或未确认跳板须先处理对应缺口；不会以减少确认次数为由跳过身份核验。
+主机管理直接沿既有技能处理，不自动启动 planner。添加准备仅三项：去私有注释的完整公钥、主机算法及 SHA256 指纹（注明可信来源或待核验）、服务器等级。无可靠本地等级记录显示 High（未核实），不提前登录查询。默认不附安装命令、教程、大确认卡或重复目标；需要时再提供。用户独立安装公钥并通过控制台等可信渠道比对指纹后，一次简短“确认”批准已明确目标的连接与本地登记，随后连续验证和登记。未知写入范围须作必要短说明并取得授权，不能为简洁静默扩大范围；公钥、签名后端、跳板或安全前提缺失时只处理对应缺口。
 
 连接使用选定裸公钥和严格主机校验，排除其他钥匙、密码、证书替代与旧连接复用。指纹冲突、撤销或身份不符立即停止；测试汇总成功、失败、阻塞、未执行，添加还区分连接通过但登记失败。要求 Ops 代为安装或撤销远端公钥仍是独立 High 变更，方案认可与执行批准不合并。
 
