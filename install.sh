@@ -70,6 +70,7 @@ files=(opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
        opencode/skills/ops-workflows/references/memory.md
        opencode/skills/ops-workflows/references/workspace-git.md
        opencode/skills/ops-workflows/references/long-tasks.md
+       opencode/skills/ops-hosts/SKILL.md
        opencode/skills/THIRD_PARTY_NOTICES.md
        opencode/skills/LICENSES/wshobson-agents-MIT.txt kitty/kitty.conf)
 
