@@ -55,8 +55,10 @@ state_home=$(normalize_absolute "${XDG_STATE_HOME:-$HOME/.local/state}")
 state=$(normalize_absolute "$state_home/dotbox")
 unit=dotbox-update
 label=io.github.chancelyg.dotbox-update
-files=(opencode/config.json opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
+files=(opencode/opencode.json opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
        opencode/agents/planner.md
+       # v1 默认文件仅供基线检查、安全退役、备份和回滚；v2 不自动加载此路径。
+       opencode/config.json
        # 旧代理源已删除；保留路径仅供基线检查、安全退役、备份和回滚。
        opencode/agents/plan-designer.md opencode/agents/simplicity-reviewer.md
        opencode/commands/init.md
@@ -103,7 +105,7 @@ safe_path "$lockdir"
 [[ ! -e $current || -d $current ]] || die '安装状态不是目录。'
 # 安装器自己的状态不允许链接；不读取其他应用的状态。
 if [[ -d $current ]]; then
-    for path in repository config revision runner.sh "${files[@]}"; do
+    for path in repository config revision runner.sh opencode-bin "${files[@]}"; do
         safe_path "$current/$path"
     done
     [[ $(<"$current/config") == "$config" ]] || die '配置目录与上次安装不同，请使用原 XDG_CONFIG_HOME。'
@@ -213,12 +215,6 @@ auto_status() {
 }
 check_local() {
     local file
-    # 旧 TOML 会被 OpenCode 迁移写入 config.json；只检查路径，不读取个人内容。
-    safe_path "$config/opencode/config"
-    [[ ! -e $config/opencode/config || -f $config/opencode/config ]] || die '旧 OpenCode config 不是普通文件。'
-    if [[ -f $current/opencode/config.json && -e $config/opencode/config ]]; then
-        die '旧 OpenCode config 与受管 config.json 并存，请先自行处理迁移冲突。'
-    fi
     for file in "${files[@]}"; do
         safe_path "$config/$file"
         [[ ! -e $config/$file || -f $config/$file ]] || die "目标不是普通文件：$file"
@@ -243,8 +239,10 @@ if [[ $action == status ]]; then
     fi
     printf '这是本地状态，不代表远程当前版本；执行 update 联网检查。\n'
     check_local
-    if [[ -f $current/opencode/config.json ]]; then
-        printf '兜底配置：受管（个人 opencode.json / opencode.jsonc 优先）。\n'
+    if [[ -f $current/opencode/opencode.json ]]; then
+        printf 'v2 兜底配置：受管 opencode.json（个人 opencode.jsonc 优先）。\n'
+    elif [[ -f $current/opencode/config.json ]]; then
+        printf '兜底配置：仍为 v1 config.json，尚未迁移；v2 不自动加载此文件。\n'
     else
         printf '兜底配置：未管理（未安装或个人低层配置占用）。\n'
     fi
@@ -269,6 +267,18 @@ if [[ $action == disable-auto-update ]]; then
     printf '自动更新已关闭；配置、备份和调度文件保留。\n'
     exit 0
 fi
+
+# 定时器可能没有交互 shell 的 PATH，更新复用安装时批准的程序位置。
+if [[ $action == update && -f $current/opencode-bin ]]; then
+    opencode_bin=$(<"$current/opencode-bin")
+else
+    opencode_bin=$(command -v opencode) || die '请先安装 OpenCode v2；本脚本不安装或升级程序。'
+fi
+opencode_bin=$(normalize_absolute "$opencode_bin")
+[[ -f $opencode_bin && -x $opencode_bin ]] || die 'OpenCode 程序不可执行，请检查安装并重新批准。'
+opencode_version=$("$opencode_bin" --version) || die '无法查询 OpenCode 版本，尚未应用配置。'
+opencode_version=${opencode_version#opencode v}
+[[ $opencode_version =~ ^2\.[0-9]+\.[0-9]+([-+][[:alnum:].-]+)?$ ]] || die 'main 的配置仅支持 OpenCode v2；v1 请使用 opencode-v1 标签。'
 
 [[ $(git -C "$repo" rev-parse --show-toplevel) == "$repo" ]] || die '脚本必须位于 Git 仓库根目录。'
 [[ -z $(git -C "$repo" status --porcelain --untracked-files=all) ]] || die '仓库存在未提交内容；请先自行处理，安装器不会重置或暂存。'
@@ -296,7 +306,7 @@ if [[ $action == update ]]; then
     [[ -f $repo/install.sh && ! -L $repo/install.sh ]] || die '安装脚本不是普通文件，请人工检查仓库更新。'
     cmp -s "$repo/install.sh" "$current/runner.sh" || die '安装脚本已更新；配置尚未应用，请审阅后手动运行 install.sh 重新批准。'
 else
-    printf '可安装对象：OpenCode（含低优先级 config.json；不改写个人 opencode.json / opencode.jsonc）。\n旧受管 Kitty 配置将按基线安全退役。\n'
+    printf '可安装对象：OpenCode v2（默认 opencode.json；个人同名文件跳过，opencode.jsonc 优先且不改写）。\n旧受管 v1 默认文件和 Kitty 配置将按基线安全退役。\n'
     ask '是否安装 OpenCode 配置？' || exit 0
 fi
 
@@ -311,6 +321,7 @@ mkdir -p "$candidate" "$transaction/before" "$transaction/absent"
 printf '%s\n' "$repo" >"$candidate/repository"
 printf '%s\n' "$config" >"$candidate/config"
 printf '%s\n' "$revision" >"$candidate/revision"
+printf '%s\n' "$opencode_bin" >"$candidate/opencode-bin"
 [[ -f $repo/install.sh && ! -L $repo/install.sh ]] || die '安装脚本必须是普通文件。'
 cp "$repo/install.sh" "$candidate/runner.sh"
 stamp_agent() {
@@ -324,9 +335,9 @@ stamp_agent() {
     mv "$candidate/$file.stamped" "$candidate/$file"
 }
 for file in "${files[@]}"; do
-    if [[ $file == opencode/config.json && ! -f $current/$file ]]; then
-        if [[ -e $config/$file || -e $config/opencode/config ]]; then
-            printf '跳过兜底配置：个人 config.json 或旧 config 已占用低层位置，不接管、不改写。\n'
+    if [[ $file == opencode/opencode.json && ! -f $current/$file ]]; then
+        if [[ -e $config/$file ]]; then
+            printf '跳过兜底配置：个人 opencode.json 已占用低层位置，不接管、不改写。\n'
             continue
         fi
     fi
@@ -366,7 +377,7 @@ done
 [[ ! -d $current ]] || mv "$current" "$transaction/previous-state"
 mv "$candidate" "$current"
 applying=0
-printf '已安装 OpenCode：%s\n备份：%s\n请退出并重新启动 OpenCode，加载新配置和代理版本标识。\n' "$revision" "$transaction"
+printf '已安装 OpenCode v2 配置：%s\n备份：%s\nv2 支持配置热更新；请核对实际代理标识。迁移验收建议新建会话，退出 CLI 不等于停止共享后台服务。\n' "$revision" "$transaction"
 
 # systemd 不经过 shell；禁止变量展开，并独立转义 unit 的引号和 specifier。
 unit_quote() {

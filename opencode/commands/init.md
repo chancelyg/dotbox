@@ -1,7 +1,7 @@
 ---
 description: 初始化或更新项目 AGENTS.md
 agent: coding
-subtask: false
+subagent: false
 ---
 
 分析当前仓库并创建或更新根目录 `AGENTS.md`。

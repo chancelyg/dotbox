@@ -1,25 +1,24 @@
 ---
 description: 仅用户实际输入 @planner 调用本轮流程后，为 Coding / Ops 提供方案设计与独立审查；默认 design，后续 phase=review 由主代理在新会话衔接，不实施。
 mode: subagent
-permission:
-  "*": deny
-  read:
-    "*": allow
-    "*.env": deny
-    "*.env.*": deny
-    "**/.env": deny
-    "**/.env.*": deny
-    "*.pem": deny
-    "*.key": deny
-    "**/id_rsa": deny
-    "**/id_ed25519": deny
-    "**/secrets/**": deny
-    "*.env.example": allow
-    "**/.env.example": allow
-  glob: allow
-  grep: allow
-  list: allow
-  external_directory: allow
+permissions:
+  - { action: "*", resource: "*", effect: deny }
+  - { action: read, resource: "*", effect: allow }
+  - { action: read, resource: "*.env", effect: deny }
+  - { action: read, resource: "*.env.*", effect: deny }
+  - { action: read, resource: "**/.env", effect: deny }
+  - { action: read, resource: "**/.env.*", effect: deny }
+  - { action: read, resource: "*.pem", effect: deny }
+  - { action: read, resource: "*.key", effect: deny }
+  - { action: read, resource: "**/id_rsa", effect: deny }
+  - { action: read, resource: "**/id_ed25519", effect: deny }
+  - { action: read, resource: "**/secrets/**", effect: deny }
+  - { action: read, resource: "*.env.example", effect: allow }
+  - { action: read, resource: "**/.env.example", effect: allow }
+  - { action: glob, resource: "*", effect: allow }
+  - { action: grep, resource: "*", effect: allow }
+  - { action: list, resource: "*", effect: allow }
+  - { action: external_directory, resource: "*", effect: allow }
 ---
 
 # Planner：方案设计与独立审查
@@ -98,7 +97,7 @@ permission:
 本节是 Coding / Ops 的交接协议，不授权本代理自行启动子任务。用户一次实际 `@planner` 调用启动当前 Plan，后续内部调用无需用户再次 @；完成、取消或进入实施后关闭本轮，不将该调用复用于其他任务或后续新 Plan。
 
 1. 复用用户手动 @ 返回的 design 结果，不重复设计；没有本轮用户实际 @ 调用的依据时，不启动流程，返回 BLOCKED 说明缺少启动依据。核验阶段、JSON、事实与关键假设，补齐关键缺口再形成主代理草案。不把 READY 当作 PASS。只有已启动的本轮关键新证据补齐或需求实质变化才重新设计，不把每条审查意见送回 design。
-2. 主代理为 `phase=review` 创建同名代理的全新会话，仅交需求、规则、当前完整 Plan、必要脱敏证据和允许路径，不交设计推理、完整聊天或历轮争论。设计与每轮审查均不提供或复用 `task_id`，是主会话下的独立兄弟会话，不从子会话递归启动。独立性指上下文，不保证模型不同。
+2. 主代理为 `phase=review` 创建同名代理的全新会话，仅交需求、规则、当前完整 Plan、必要脱敏证据和允许路径，不交设计推理、完整聊天或历轮争论。设计与每轮审查均使用独立的新子会话，不恢复或复用已有子会话，是主会话下的独立兄弟会话，不从子会话递归启动。独立性指上下文，不保证模型不同。
 3. 主代理核验 verdict 及 blocker，采纳有依据的最小修正、拒绝无依据或越界意见。缺事实先补证，关键阻塞未解决时停止；需实质修订时更新草案，再发新 review 会话，不重新设计。每次审查调用（包括失败或无效结果）计一轮，设计不计；同一 Plan 最多 5 轮，第五轮可纳入有效修正但不再调用第六轮。
 4. PASS、没有值得采纳的实质问题或达到上限时结束，不为得到放行空转。没有 PASS 就如实说明未通过或修订后未复审，不将自审、第五轮后的修改或无效输出记为 PASS。达到上限仍未通过时展示简要结论与遗留问题，请用户选择确认、调整或取消；已核实的安全、授权和关键前提阻塞不因确认而放行。
 5. 代理未配置、未加载、权限不足或调用失败时报告实际阶段和轮数，明确未独立完成设计 / 审查；主代理可按同标准自行处理，但不得假称独立 PASS，不安装、改配置或替换代理冒充。有效关键阻塞不因降级消失。
