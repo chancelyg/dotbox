@@ -6,7 +6,7 @@
 
 仓库根目录对应 `$HOME/.config`，配置保持原始路径层级，不按应用类型重新分类：
 
-- `kitty/kitty.conf` → `$HOME/.config/kitty/kitty.conf`
+- `opencode/config.json` → `$HOME/.config/opencode/config.json`（低优先级默认配置）
 - `opencode/agents/` → `$HOME/.config/opencode/agents/`
 - `opencode/skills/` → `$HOME/.config/opencode/skills/`
 
@@ -16,7 +16,7 @@
 
 ### Linux / macOS 可选安装
 
-不使用安装器也可以继续单独参考、复制配置。安装器支持 OpenCode 和 Kitty，不改变配置的原有目录结构。
+不使用安装器也可以继续单独参考、复制配置。安装器仅支持 OpenCode，保留配置的原有目录结构。
 
 ```bash
 git clone https://github.com/chancelyg/dotbox.git "$HOME/.dotbox"
@@ -25,15 +25,17 @@ bash "$HOME/.dotbox/install.sh"
 
 `~/.dotbox` 只是示例位置；脚本从自身位置解析仓库，不依赖执行时的当前目录。需要 Bash、Git 和系统基础命令，兼容 macOS 自带的 Bash 3.2；使用干净、已提交且配置了远程 upstream 的分支。安装器不提交、推送、重置或暂存任何内容。
 
-安装时统一确认 OpenCode 和 Kitty，随后处理同名配置冲突，并询问是否启用每 6 小时自动更新（默认否；选择否会关闭当前平台已有的 dotbox 调度任务）。明确管理的文件仅为：
+安装时确认 OpenCode，随后处理同名配置冲突，并询问是否启用每 6 小时自动更新（默认否；选择否会关闭当前平台已有的 dotbox 调度任务）。明确管理的文件仅为：
 
+- `opencode/config.json`（低层位置被个人配置占用时跳过，不接管）
 - `opencode/AGENTS.md`
 - `opencode/agents/coding.md`、`ops.md`、`planner.md`
 - `opencode/commands/init.md`
 - `opencode/skills/` 下列出的开发与运维技能及第三方来源、许可证文件
-- `kitty/kitty.conf`
 
-不安装 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。`kitty/current-theme.conf` 等本地主题和生成文件也不受管理，更新 `kitty.conf` 时不会删除它们。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录。首次同名文件不同需确认后备份；后续发现受管文件被本地修改或删除会停止，重新安装也不会绕过保护。需要发布本机修改时，先手动更新仓库并 commit/push，再让其他设备自动拉取；安装器不会自动上传。源文件删除时，仅移除仍与基线一致的受管副本。
+不安装参考文件 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录；仅 Coding / Ops 的固定版本槽在复制时盖章，其余文件原样复制。除下述兜底配置的跳过规则外，首次同名文件不同需确认后备份；后续发现受管文件被本地修改或删除会停止，重新安装也不会绕过保护。需要发布本机修改时，先手动更新仓库并 commit/push，再让其他设备自动拉取；安装器不会自动上传。源文件删除时，仅移除仍与基线一致的受管副本。
+
+Kitty 已停止支持。安装器仅保留 `kitty/kitty.conf` 的退役路径：有旧安装基线且仍一致的副本会备份并删除，本地修改或删除仍会阻塞。无基线的个人配置、主题（如 `current-theme.conf`）和目录不会被清理。
 
 在实际仓库位置运行：
 
@@ -47,9 +49,41 @@ bash /path/to/dotbox/install.sh disable-auto-update  # 关闭自动更新，保�
 
 Linux 自动更新使用 `systemd --user` 的 `dotbox-update.timer`：用户管理器启动 5 分钟后首次检查，此后在每次任务结束 6 小时后再次检查。macOS 使用 `~/Library/LaunchAgents/io.github.chancelyg.dotbox-update.plist`：加载时检查一次，之后以 `21600` 秒为间隔；设备睡眠时不会被唤醒，错过的多个间隔会在唤醒后合并为一次。两者都不是每天某个固定钟点触发。调度器不可用时仍可手动安装和更新；不提供 cron 回退、不提权、不自动启用 Linux linger，退出登录后的运行取决于系统已有设置。Linux 可用 `journalctl --user -u dotbox-update.service` 查看服务输出；其他失败可手动运行 `update` 查看详情。
 
-调度任务绑定实际仓库和 XDG 路径，运行安装时批准的脚本副本。仓库内 `install.sh` 变化后，自动更新只同步仓库，暂停配置应用；审阅后手动重新安装才能批准新版脚本。不会自动执行仓库钩子、重新启动 OpenCode 或 Kitty。`kitty.conf` 当前启用了 Kitty 自身的自动重载；OpenCode 配置更新后仍须退出并重新启动。仓库移动后需从新位置重新安装以刷新绑定；同一用户改用其他克隆需要确认，不生成多套调度任务。
+调度任务绑定实际仓库和 XDG 路径，运行安装时批准的脚本副本。仓库内 `install.sh` 变化后，自动更新只同步仓库，暂停配置应用；审阅后手动重新安装才能批准新版脚本。不会自动执行仓库钩子或重新启动 OpenCode；配置更新后须退出并重新启动。仓库移动后需从新位置重新安装以刷新绑定；同一用户改用其他克隆需要确认，不生成多套调度任务。
 
 安装版本、受管内容基线、批准脚本、最近检查及备份保存在 `${XDG_STATE_HOME:-$HOME/.local/state}/dotbox`，不写入仓库。配置或状态路径含符号链接、与仓库重叠时拒绝安装。普通应用错误会尝试恢复原配置，备份保留供手动恢复；断电或强制终止不保证自动恢复。备份不会自动清理，请按需自行管理。
+
+### OpenCode 默认配置与个人覆盖
+
+依据 [OpenCode 1.18.35 配置加载源码](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/config/config.ts)，全局文件从低到高依次为 `config.json` → `opencode.json` → `opencode.jsonc`。安装器只管理最低层 `config.json`，个人后两者的同名字段优先，未提供的字段由默认层补充。其他版本使用前须核对兼容性；不使用优先级更高的 `OPENCODE_CONFIG`、inline 或系统 managed 配置充当兜底。
+
+默认文件仅含压缩设置 `auto=true`、`prune=true`、`reserved=10000`、`tail_turns=2` 和常见生成目录的 `watcher.ignore`，不设置模型、Provider、MCP、权限或插件，不自动安装依赖或要求凭证。字段依据 [1.18.35 schema](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/core/src/v1/config/config.ts)。个人覆盖示例（写入自己的 `opencode.jsonc`）：
+
+```jsonc
+{
+    "$schema": "https://opencode.ai/config.json",
+    "compaction": { "tail_turns": 6 },
+    "watcher": { "ignore": ["custom-output/**"] }
+}
+```
+
+嵌套对象保留未覆盖字段；`watcher.ignore` 数组由高层整体替换，不逐项合并。该说明限于 JSON 默认层，不表示所有配置都遵循同一规则：Markdown 代理定义在全局 JSON 后加载，个人 JSON 不保证覆盖其所有字段。
+
+非受管 `config.json` 已存在时，即使字节相同也跳过；旧 TOML 文件 `opencode/config` 存在时也跳过，避免 OpenCode 自动迁移写入同一位置。安装器不读取旧文件正文、不搬迁或合并个人文件，跳过项不进入受管基线，安装输出和 `status` 会说明未管理。已受管默认文件与后来出现的旧 TOML 并存时停止，请先自行处理迁移冲突。符号链接及非普通文件仍拒绝。
+
+仅存在 `config.json` 时，OpenCode 原生保存配置可能写回它；请先创建个人 `opencode.json` 或 `opencode.jsonc` 再进行个人设置。受管默认文件被改写或删除后，更新会按基线保护停止，不会通过重新安装静默重置。个人 JSON 文件不由安装器创建或改写。
+
+### 版本标识
+
+- **OpenCode 程序版本**：运行 `opencode --version`，与 dotbox 配置版本分开。
+- **磁盘安装版本**：运行安装器 `status` 查看完整提交号；仓库 HEAD 可能已更新但尚未应用，两者分别显示，不代表远程最新版。
+- **代理提示词版本**：Coding / Ops 在已有末行中显示 `dotbox@<12 位提交号>`，完整提交号保留在代理正文。它表示该代理安装时所在的 dotbox 提交，不是模型版本或独立的代理语义版本。
+
+安装器只替换 Coding / Ops 正文中的唯一固定版本槽，渲染后的文件同时用于安装与基线比较，失败时随配置和 revision 一起恢复。缺失或重复版本槽会在应用前停止。手动复制源文件显示 `dotbox@未盖章`；Planner 仍只返回 JSON，不追加标识。
+
+标识来自提示词自报，不是程序级可信证明。代理不读取磁盘新版本替换当前标识；更新后旧会话不应冒充已加载新版，须退出并重启 OpenCode。可用 `opencode debug agent coding` / `ops` 检查新进程解析的代理，但这不证明已有会话或模型实际输出正确。不要在包含私有配置的环境中公开完整 debug 输出。
+
+全局 `opencode/AGENTS.md` 仅保留跨角色偏好与原则；Coding 执行流程、Ops 授权流程和 Planner 只读输出分别由各代理定义。通用原则不授予执行权限，不让子代理自行提问或要求只读角色运行测试。
 
 ### OpenCode Coding / Ops 与方案设计、审查
 

@@ -55,7 +55,7 @@ state_home=$(normalize_absolute "${XDG_STATE_HOME:-$HOME/.local/state}")
 state=$(normalize_absolute "$state_home/dotbox")
 unit=dotbox-update
 label=io.github.chancelyg.dotbox-update
-files=(opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
+files=(opencode/config.json opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
        opencode/agents/planner.md
        # 旧代理源已删除；保留路径仅供基线检查、安全退役、备份和回滚。
        opencode/agents/plan-designer.md opencode/agents/simplicity-reviewer.md
@@ -74,7 +74,9 @@ files=(opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
        opencode/skills/ops-workflows/references/long-tasks.md
        opencode/skills/ops-hosts/SKILL.md
        opencode/skills/THIRD_PARTY_NOTICES.md
-       opencode/skills/LICENSES/wshobson-agents-MIT.txt kitty/kitty.conf)
+       opencode/skills/LICENSES/wshobson-agents-MIT.txt
+       # Kitty 不再提供源配置；仅安全退役旧受管副本，不处理个人主题。
+       kitty/kitty.conf)
 
 # 不沿链接覆盖文件，也不让本地状态或配置写回源码仓库。
 safe_path "$config"
@@ -211,6 +213,12 @@ auto_status() {
 }
 check_local() {
     local file
+    # 旧 TOML 会被 OpenCode 迁移写入 config.json；只检查路径，不读取个人内容。
+    safe_path "$config/opencode/config"
+    [[ ! -e $config/opencode/config || -f $config/opencode/config ]] || die '旧 OpenCode config 不是普通文件。'
+    if [[ -f $current/opencode/config.json && -e $config/opencode/config ]]; then
+        die '旧 OpenCode config 与受管 config.json 并存，请先自行处理迁移冲突。'
+    fi
     for file in "${files[@]}"; do
         safe_path "$config/$file"
         [[ ! -e $config/$file || -f $config/$file ]] || die "目标不是普通文件：$file"
@@ -223,7 +231,7 @@ check_local() {
 }
 
 if [[ $action == status ]]; then
-    printf '管理对象：OpenCode、Kitty\n平台：%s\n仓库：%s\n配置目录：%s\n安装版本：%s\n' "$platform" "$(<"$current/repository")" "$config" "$(<"$current/revision")"
+    printf '管理对象：OpenCode\n平台：%s\n仓库：%s\n配置目录：%s\n磁盘安装版本：%s\n' "$platform" "$(<"$current/repository")" "$config" "$(<"$current/revision")"
     if [[ -d $(<"$current/repository") ]]; then
         printf '仓库当前版本：'
         git -C "$(<"$current/repository")" rev-parse HEAD
@@ -235,7 +243,13 @@ if [[ $action == status ]]; then
     fi
     printf '这是本地状态，不代表远程当前版本；执行 update 联网检查。\n'
     check_local
+    if [[ -f $current/opencode/config.json ]]; then
+        printf '兜底配置：受管（个人 opencode.json / opencode.jsonc 优先）。\n'
+    else
+        printf '兜底配置：未管理（未安装或个人低层配置占用）。\n'
+    fi
     printf '受管文件：与安装基线一致。\n'
+    printf '磁盘安装版本不证明当前会话已加载；代理标识来自其提示词。程序版本另用 opencode --version 查询。\n'
     exit 0
 fi
 
@@ -282,8 +296,8 @@ if [[ $action == update ]]; then
     [[ -f $repo/install.sh && ! -L $repo/install.sh ]] || die '安装脚本不是普通文件，请人工检查仓库更新。'
     cmp -s "$repo/install.sh" "$current/runner.sh" || die '安装脚本已更新；配置尚未应用，请审阅后手动运行 install.sh 重新批准。'
 else
-    printf '可安装对象：OpenCode（不含 opencode.jsonc）和 Kitty（kitty.conf；不含本地主题文件）\n'
-    ask '是否安装 OpenCode 和 Kitty 配置？' || exit 0
+    printf '可安装对象：OpenCode（含低优先级 config.json；不改写个人 opencode.json / opencode.jsonc）。\n旧受管 Kitty 配置将按基线安全退役。\n'
+    ask '是否安装 OpenCode 配置？' || exit 0
 fi
 
 revision=$(git -C "$repo" rev-parse HEAD)
@@ -299,12 +313,29 @@ printf '%s\n' "$config" >"$candidate/config"
 printf '%s\n' "$revision" >"$candidate/revision"
 [[ -f $repo/install.sh && ! -L $repo/install.sh ]] || die '安装脚本必须是普通文件。'
 cp "$repo/install.sh" "$candidate/runner.sh"
+stamp_agent() {
+    local file=$1 line count=0 marker='版本标识：dotbox@未盖章（安装提交：未盖章）。'
+    while IFS= read -r line || [[ -n $line ]]; do
+        if [[ $line == "$marker" ]]; then count=$((count + 1)); fi
+    done <"$candidate/$file"
+    [[ $count == 1 ]] || die "代理版本槽必须恰好出现一次：$file"
+    # 仅渲染固定正文行；渲染后的候选同时作为目标和安装基线。
+    sed "s/^$marker$/版本标识：dotbox@${revision:0:12}（安装提交：$revision）。/" "$candidate/$file" >"$candidate/$file.stamped"
+    mv "$candidate/$file.stamped" "$candidate/$file"
+}
 for file in "${files[@]}"; do
+    if [[ $file == opencode/config.json && ! -f $current/$file ]]; then
+        if [[ -e $config/$file || -e $config/opencode/config ]]; then
+            printf '跳过兜底配置：个人 config.json 或旧 config 已占用低层位置，不接管、不改写。\n'
+            continue
+        fi
+    fi
     entry=$(git -C "$repo" ls-tree "$revision" -- "$file")
     if [[ -n $entry ]]; then
         [[ $entry == '100644 '* ]] || die "源配置不是普通文件：$file"
         mkdir -p "$(dirname "$candidate/$file")"
         git -C "$repo" show "$revision:$file" >"$candidate/$file"
+        case "$file" in opencode/agents/coding.md|opencode/agents/ops.md) stamp_agent "$file" ;; esac
     fi
     if [[ -f $config/$file && ! -f $current/$file && -f $candidate/$file ]] && ! cmp -s "$config/$file" "$candidate/$file"; then
         if [[ $action != install ]] || ! ask "已有不同配置 $file，是否备份并替换？"; then
@@ -335,7 +366,7 @@ done
 [[ ! -d $current ]] || mv "$current" "$transaction/previous-state"
 mv "$candidate" "$current"
 applying=0
-printf '已安装 OpenCode 和 Kitty：%s\n备份：%s\n请退出并重新启动 OpenCode；Kitty 会按自身配置自动重载。\n' "$revision" "$transaction"
+printf '已安装 OpenCode：%s\n备份：%s\n请退出并重新启动 OpenCode，加载新配置和代理版本标识。\n' "$revision" "$transaction"
 
 # systemd 不经过 shell；禁止变量展开，并独立转义 unit 的引号和 specifier。
 unit_quote() {
@@ -367,7 +398,7 @@ if [[ $action == install ]]; then
     if [[ $platform == Linux ]]; then
         mkdir -p "$units"
         {
-            printf '# Managed by dotbox install.sh\n[Unit]\nDescription=Update dotbox OpenCode and Kitty configuration\n[Service]\nType=oneshot\n'
+            printf '# Managed by dotbox install.sh\n[Unit]\nDescription=Update dotbox OpenCode configuration\n[Service]\nType=oneshot\n'
             printf 'Environment=%s\n' "$(unit_quote "XDG_CONFIG_HOME=$config")" "$(unit_quote "XDG_STATE_HOME=$state_home")"
             printf 'ExecStart=:/bin/bash %s update %s\n' "$(unit_quote "$current/runner.sh")" "$(unit_quote "$repo")"
             printf 'TimeoutStartSec=5min\n'
