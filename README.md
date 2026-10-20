@@ -43,7 +43,7 @@ bash "$HOME/.dotbox/install.sh"
 
 不安装参考文件 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录；仅 Coding / Ops 的固定版本槽在复制时盖章，其余文件原样复制。除下述兜底配置的跳过规则外，首次同名文件不同需确认后备份；后续发现受管文件被本地修改或删除会停止，重新安装也不会绕过保护。需要发布本机修改时，先手动更新仓库并 commit/push，再让其他设备自动拉取；安装器不会自动上传。源文件删除时，仅移除仍与基线一致的受管副本。
 
-`cli.json` 默认启用跨项目共享的垂直会话 Tabs，顶部横向 Tabs 不再显示；每个非紧凑 Tab 在标题下方显示项目名及可用的 Git 分支。使用 `Ctrl+O` 选择最近会话或项目。除 OpenCode 原生切换键外，`Shift+↑` / `Shift+↓` 分别切换上一个 / 下一个会话；为避免输入框抢占按键，默认的多行文本 `input.select.up/down` 绑定被禁用。状态侧边栏补充 HOST、会话平均与最近一轮模型速度、OpenAI Subscription / DeepSeek API 可验证额度、CPU & RAM 和最后一条用户消息；无可用额度时自动隐藏 THE USAGE。
+`cli.json` 默认启用按当前工作目录隔离的垂直会话 Tabs，顶部横向 Tabs 不再显示；每个非紧凑 Tab 在标题下方显示项目名及可用的 Git 分支。使用 `Ctrl+O` 选择最近会话或项目。除 OpenCode 原生切换键外，`Shift+↑` / `Shift+↓` 分别切换上一个 / 下一个会话；为避免输入框抢占按键，默认的多行文本 `input.select.up/down` 绑定被禁用。状态侧边栏补充 HOST、会话平均与最近一轮模型速度、OpenAI Subscription / DeepSeek API 可验证额度、CPU & RAM 和最后一条用户消息；无可用额度时自动隐藏 THE USAGE。
 
 状态侧边栏按 V2 的运行边界拆分：`tui.tsx` 只负责本地界面，`index.ts` 在 OpenCode 服务端通过 active integration 解析凭证，`rpc.ts` 只向 TUI 返回脱敏后的额度指标。凭证不进入 UI、日志或磁盘缓存；Provider 请求仅访问代码中固定的官方 HTTPS 端点，并有超时、响应大小限制、禁止重定向、内存 TTL 和失败退避。当前额度适配器仅包括已验证的 OpenAI Subscription 与 DeepSeek API；其他 Provider 不推断、不显示。
 
