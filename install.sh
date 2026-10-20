@@ -55,13 +55,17 @@ state_home=$(normalize_absolute "${XDG_STATE_HOME:-$HOME/.local/state}")
 state=$(normalize_absolute "$state_home/dotbox")
 unit=dotbox-update
 label=io.github.chancelyg.dotbox-update
-files=(opencode/opencode.json opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
+files=(opencode/opencode.json opencode/cli.json opencode/AGENTS.md opencode/agents/coding.md opencode/agents/ops.md
        opencode/agents/planner.md
+       opencode/plugins/status-sidebar/index.ts
+       opencode/plugins/status-sidebar/rpc.ts
+       opencode/plugins/status-sidebar/tui.tsx
        # v1 默认文件仅供基线检查、安全退役、备份和回滚；v2 不自动加载此路径。
        opencode/config.json
        # 旧代理源已删除；保留路径仅供基线检查、安全退役、备份和回滚。
        opencode/agents/plan-designer.md opencode/agents/simplicity-reviewer.md
        opencode/commands/init.md
+       opencode/skills/agent-browser/SKILL.md
        opencode/skills/responsive-design/SKILL.md
        opencode/skills/responsive-design/references/details.md
        opencode/skills/accessibility-compliance/SKILL.md

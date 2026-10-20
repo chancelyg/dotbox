@@ -2,7 +2,7 @@
 
 个人常用、可公开分享的配置文件归档。
 
-`main` 维护 OpenCode **v2 原生配置**，本次迁移以 **2.0.29** 为验证基线。`opencode-v1` 标签固定 v1 兼容版本（提交 `be42c2c`，验证版本 1.18.35），不将 v2 原生文件交给 v1 使用。
+`main` 维护 OpenCode **v2 原生配置**，当前以 **2.0.32** 为验证基线。`opencode-v1` 标签固定 v1 兼容版本（提交 `be42c2c`，验证版本 1.18.35），不将 v2 原生文件交给 v1 使用。
 
 继续使用 v1 时，从该标签创建自己的本地分支再运行旧安装器；旧安装器不接受 detached HEAD。不要让 v1 安装继续自动跟随 `origin/main`：先关闭原定时更新，再选择固定版本，且不要为该分支设置跟随 main 的 upstream。切换前自行处理工作区改动，安装器不会回滚或覆盖已被本地修改的配置。程序升级参照 [v2 安装与迁移指南](https://opencode.ai/v2/docs/migrate-v1/)，本仓库不替换 OpenCode 二进制、凭证或会话数据。
 
@@ -11,6 +11,8 @@
 仓库根目录对应 `$HOME/.config`，配置保持原始路径层级，不按应用类型重新分类：
 
 - `opencode/opencode.json` → `$HOME/.config/opencode/opencode.json`（低优先级默认配置）
+- `opencode/cli.json` → `$HOME/.config/opencode/cli.json`（终端界面与快捷键配置）
+- `opencode/plugins/status-sidebar/` → `$HOME/.config/opencode/plugins/status-sidebar/`（V2 状态侧边栏）
 - `opencode/agents/` → `$HOME/.config/opencode/agents/`
 - `opencode/skills/` → `$HOME/.config/opencode/skills/`
 
@@ -32,12 +34,18 @@ bash "$HOME/.dotbox/install.sh"
 安装时确认 OpenCode，随后处理同名配置冲突，并询问是否启用每 6 小时自动更新（默认否；选择否会关闭当前平台已有的 dotbox 调度任务）。明确管理的文件仅为：
 
 - `opencode/opencode.json`（低层位置被个人配置占用时跳过，不接管）
+- `opencode/cli.json`
+- `opencode/plugins/status-sidebar/index.ts`、`rpc.ts`、`tui.tsx`
 - `opencode/AGENTS.md`
 - `opencode/agents/coding.md`、`ops.md`、`planner.md`
 - `opencode/commands/init.md`
 - `opencode/skills/` 下列出的开发与运维技能及第三方来源、许可证文件
 
 不安装参考文件 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录；仅 Coding / Ops 的固定版本槽在复制时盖章，其余文件原样复制。除下述兜底配置的跳过规则外，首次同名文件不同需确认后备份；后续发现受管文件被本地修改或删除会停止，重新安装也不会绕过保护。需要发布本机修改时，先手动更新仓库并 commit/push，再让其他设备自动拉取；安装器不会自动上传。源文件删除时，仅移除仍与基线一致的受管副本。
+
+`cli.json` 默认启用跨项目共享的垂直会话 Tabs，顶部横向 Tabs 不再显示；每个非紧凑 Tab 在标题下方显示项目名及可用的 Git 分支。使用 `Ctrl+O` 选择最近会话或项目。除 OpenCode 原生切换键外，`Shift+↑` / `Shift+↓` 分别切换上一个 / 下一个会话；为避免输入框抢占按键，默认的多行文本 `input.select.up/down` 绑定被禁用。状态侧边栏补充 HOST、会话平均与最近一轮模型速度、OpenAI Subscription / DeepSeek API 可验证额度、CPU & RAM 和最后一条用户消息；无可用额度时自动隐藏 THE USAGE。
+
+状态侧边栏按 V2 的运行边界拆分：`tui.tsx` 只负责本地界面，`index.ts` 在 OpenCode 服务端通过 active integration 解析凭证，`rpc.ts` 只向 TUI 返回脱敏后的额度指标。凭证不进入 UI、日志或磁盘缓存；Provider 请求仅访问代码中固定的官方 HTTPS 端点，并有超时、响应大小限制、禁止重定向、内存 TTL 和失败退避。当前额度适配器仅包括已验证的 OpenAI Subscription 与 DeepSeek API；其他 Provider 不推断、不显示。
 
 Kitty 已停止支持。安装器仅保留 `kitty/kitty.conf` 的退役路径：有旧安装基线且仍一致的副本会备份并删除，本地修改或删除仍会阻塞。无基线的个人配置、主题（如 `current-theme.conf`）和目录不会被清理。
 
@@ -121,8 +129,9 @@ Coding / Ops 默认自行查证、形成必要方案并按授权执行验证；�
 - `accessibility-compliance`：WCAG 2.2、语义 HTML、键盘与焦点、ARIA 和辅助技术支持。
 - `api-design-principles`：REST/GraphQL 资源、契约、错误、分页和版本演进。
 - `postgresql-table-design`：PostgreSQL 类型、约束、索引、分区和安全模式演进。
+- `agent-browser`：按已安装 CLI 的实际版本加载浏览器自动化工作流；不自动安装程序或创建 MCP。
 
-技能来自 MIT 许可的 [`wshobson/agents`](https://github.com/wshobson/agents)，固定来源、引入范围和许可文本见 `opencode/skills/THIRD_PARTY_NOTICES.md`。更新后核对实际加载内容，不将磁盘变化视为已有会话已采用新内容。
+前四个领域技能来自 MIT 许可的 [`wshobson/agents`](https://github.com/wshobson/agents)，固定来源、引入范围和许可文本见 `opencode/skills/THIRD_PARTY_NOTICES.md`。`agent-browser` 为本仓库维护的本机工具使用入口。更新后核对实际加载内容，不将磁盘变化视为已有会话已采用新内容。
 
 ### OpenCode Ops 按需协议
 
