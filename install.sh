@@ -17,6 +17,9 @@ action=${1:-install}
 case "$action" in install|update|status|disable-auto-update) ;; *) die '用法：bash install.sh [install|update|status|disable-auto-update]' ;; esac
 [[ $# -le 1 || ( $# -eq 2 && $action == update ) ]] || die '参数过多。'
 [[ -n ${HOME:-} ]] || die 'HOME 未设置。'
+# 定时器带仓库参数；只有终端中的直接调用可以批准覆盖冲突。
+interactive=0
+if [[ $# -lt 2 && -t 0 ]]; then interactive=1; fi
 
 normalize_absolute() {
     local path=$1 part result= parts=()
@@ -217,6 +220,22 @@ auto_status() {
         else printf '关闭'; fi
     fi
 }
+conflicts=()
+conflict_count=0
+show_conflicts() {
+    local file
+    printf '以下配置与安装基线或待安装内容冲突：\n' >&2
+    for file in "${conflicts[@]}"; do
+        if [[ -f $config/$file ]]; then
+            printf '  %s（内容不同）\n' "$file" >&2
+        else
+            printf '  %s（本地已删除）\n' "$file" >&2
+        fi
+        if [[ -n ${1:-} && ! -f ${1:-}/$file ]]; then
+            printf '    仓库已退役：移除现存副本，已缺失则不再恢复。\n' >&2
+        fi
+    done
+}
 check_local() {
     local file
     for file in "${files[@]}"; do
@@ -224,7 +243,8 @@ check_local() {
         [[ ! -e $config/$file || -f $config/$file ]] || die "目标不是普通文件：$file"
         if [[ -f $current/$file ]]; then
             if [[ ! -f $config/$file ]] || ! cmp -s "$current/$file" "$config/$file"; then
-                die "受管文件已被本地修改或删除：$file"
+                conflicts[conflict_count]=$file
+                conflict_count=$((conflict_count + 1))
             fi
         fi
     done
@@ -243,6 +263,10 @@ if [[ $action == status ]]; then
     fi
     printf '这是本地状态，不代表远程当前版本；执行 update 联网检查。\n'
     check_local
+    if (( conflict_count )); then
+        show_conflicts
+        die '受管配置存在本地改动；请在终端手动运行 install.sh 或 install.sh update，确认备份并替换。'
+    fi
     if [[ -f $current/opencode/opencode.json ]]; then
         printf 'v2 兜底配置：受管 opencode.json（个人 opencode.jsonc 优先）。\n'
     elif [[ -f $current/opencode/config.json ]]; then
@@ -288,17 +312,23 @@ opencode_version=${opencode_version#opencode v}
 [[ -z $(git -C "$repo" status --porcelain --untracked-files=all) ]] || die '仓库存在未提交内容；请先自行处理，安装器不会重置或暂存。'
 git -C "$repo" symbolic-ref -q HEAD >/dev/null || die '不支持 detached HEAD，请使用分支。'
 check_local
+if (( conflict_count && ! interactive )); then
+    show_conflicts
+    die '非交互更新不覆盖本地改动；请在终端手动运行 install.sh 或 install.sh update。'
+fi
 if [[ -d $current && $(<"$current/repository") != "$repo" ]]; then
     [[ $action == install ]] || die '更新仓库与安装绑定不同，请重新安装。'
     ask "现有安装绑定其他位置，是否改绑到 $repo？" || die '未改绑。'
 fi
 
+script_changed=0
 if [[ $action == update ]]; then
     [[ -d $current ]] || die '请先运行交互安装。'
     upstream=$(git -C "$repo" rev-parse --symbolic-full-name '@{upstream}') || die '当前分支未配置 upstream。'
     branch=$(git -C "$repo" symbolic-ref --short HEAD)
     remote=$(git -C "$repo" config --get "branch.$branch.remote")
     [[ $remote != . ]] || die '自动更新需要远程 upstream。'
+    script_revision=$(git -C "$repo" rev-parse HEAD:install.sh)
     export GIT_TERMINAL_PROMPT=0
     git -C "$repo" -c core.hooksPath=/dev/null fetch --no-tags "$remote"
     git -C "$repo" merge-base --is-ancestor HEAD "$upstream" || die '本地领先或已分叉，不自动合并。'
@@ -308,14 +338,19 @@ if [[ $action == update ]]; then
     done < <(git -C "$repo" diff --name-only --diff-filter=A -z HEAD "$upstream")
     git -C "$repo" -c core.hooksPath=/dev/null merge --ff-only --no-overwrite-ignore "$upstream"
     [[ -f $repo/install.sh && ! -L $repo/install.sh ]] || die '安装脚本不是普通文件，请人工检查仓库更新。'
-    cmp -s "$repo/install.sh" "$current/runner.sh" || die '安装脚本已更新；配置尚未应用，请审阅后手动运行 install.sh 重新批准。'
+    [[ $(git -C "$repo" rev-parse HEAD:install.sh) == "$script_revision" ]] || die '已拉取新版安装脚本；配置尚未应用，请审阅后在终端重新运行 install.sh 或 install.sh update。'
+    if ! cmp -s "$repo/install.sh" "$current/runner.sh"; then
+        (( interactive )) && [[ $script == "$repo/install.sh" ]] || die '安装脚本未经批准；请审阅后在终端运行仓库中的 install.sh 或 install.sh update。'
+        ask '安装脚本与上次批准的版本不同，是否已审阅并批准当前脚本？' || die '未批准安装脚本，配置未应用。'
+        script_changed=1
+    fi
 else
     printf '可安装对象：OpenCode v2（默认 opencode.json；个人同名文件跳过，opencode.jsonc 优先且不改写）。\n旧受管 v1 默认文件和 Kitty 配置将按基线安全退役。\n'
     ask '是否安装 OpenCode 配置？' || exit 0
 fi
 
 revision=$(git -C "$repo" rev-parse HEAD)
-if [[ $action == update && $(<"$current/revision") == "$revision" ]]; then
+if [[ $action == update && $(<"$current/revision") == "$revision" ]] && (( conflict_count == 0 && script_changed == 0 )); then
     printf '受管配置已是本次检查版本：%s\n' "$revision"
     exit 0
 fi
@@ -353,10 +388,17 @@ for file in "${files[@]}"; do
         case "$file" in opencode/agents/coding.md|opencode/agents/ops.md) stamp_agent "$file" ;; esac
     fi
     if [[ -f $config/$file && ! -f $current/$file && -f $candidate/$file ]] && ! cmp -s "$config/$file" "$candidate/$file"; then
-        if [[ $action != install ]] || ! ask "已有不同配置 $file，是否备份并替换？"; then
-            die "未授权替换：$file"
-        fi
+        conflicts[conflict_count]=$file
+        conflict_count=$((conflict_count + 1))
     fi
+done
+if (( conflict_count )); then
+    show_conflicts "$candidate"
+    (( interactive )) || die '非交互更新不覆盖冲突；请在终端手动运行 install.sh 或 install.sh update。'
+    printf '批准后将备份现有内容及缺失状态，并按仓库版本替换或恢复；仓库已退役的受管文件将移除。\n' >&2
+    ask '是否备份上述冲突并以仓库版本为准继续安装？' || die '未批准替换，配置未应用。'
+fi
+for file in "${files[@]}"; do
     if [[ -f $candidate/$file || -f $current/$file ]]; then
         if [[ -f $config/$file ]]; then
             mkdir -p "$(dirname "$transaction/before/$file")"
@@ -375,7 +417,7 @@ for file in "${files[@]}"; do
         mkdir -p "$(dirname "$config/$file")"
         cp "$candidate/$file" "$config/$file"
     elif [[ -f $current/$file ]]; then
-        rm "$config/$file"
+        rm -f "$config/$file"
     fi
 done
 [[ ! -d $current ]] || mv "$current" "$transaction/previous-state"

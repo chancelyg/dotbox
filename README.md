@@ -41,27 +41,28 @@ bash "$HOME/.dotbox/install.sh"
 - `opencode/commands/init.md`
 - `opencode/skills/` 下列出的开发与运维技能及第三方来源、许可证文件
 
-不安装参考文件 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录；仅 Coding / Ops 的固定版本槽在复制时盖章，其余文件原样复制。除下述兜底配置的跳过规则外，首次同名文件不同需确认后备份；后续发现受管文件被本地修改或删除会停止，重新安装也不会绕过保护。需要发布本机修改时，先手动更新仓库并 commit/push，再让其他设备自动拉取；安装器不会自动上传。源文件删除时，仅移除仍与基线一致的受管副本。
+不安装参考文件 `opencode.jsonc`，不接管个人模型、MCP、凭证、其他配置或长期记忆。配置复制到 `${XDG_CONFIG_HOME:-$HOME/.config}`，不软链接整个目录；仅 Coding / Ops 的固定版本槽在复制时盖章，其余文件原样复制。除下述兜底配置的跳过规则外，首次同名文件不同、受管文件被本地修改或删除时，终端中手动运行 `install.sh` 或 `install.sh update` 均会汇总冲突，一次确认后备份现有内容及缺失状态，再按仓库版本替换或恢复；拒绝则不改配置。后台或非交互运行遇到冲突仍停止，不从管道输入接受覆盖批准。需要保留并发布本机修改时，先手动合入仓库再 commit/push；批准替换不会自动合并或上传这些修改。源文件删除时移除受管副本；副本有本地改动仍须先确认并备份。
 
 `cli.json` 默认启用按当前工作目录隔离的垂直会话 Tabs，顶部横向 Tabs 不再显示；每个非紧凑 Tab 在标题下方显示项目名及可用的 Git 分支。使用 `Ctrl+O` 选择最近会话或项目。除 OpenCode 原生切换键外，`Shift+↑` / `Shift+↓` 分别切换上一个 / 下一个会话；为避免输入框抢占按键，默认的多行文本 `input.select.up/down` 绑定被禁用。状态侧边栏补充 HOST、会话平均与最近一轮模型速度、OpenAI Subscription / DeepSeek API 可验证额度、CPU & RAM 和最后一条用户消息；无可用额度时自动隐藏 THE USAGE。
 
 状态侧边栏按 V2 的运行边界拆分：`tui.tsx` 只负责本地界面，`index.ts` 在 OpenCode 服务端通过 active integration 解析凭证，`rpc.ts` 只向 TUI 返回脱敏后的额度指标。凭证不进入 UI、日志或磁盘缓存；Provider 请求仅访问代码中固定的官方 HTTPS 端点，并有超时、响应大小限制、禁止重定向、内存 TTL 和失败退避。当前额度适配器仅包括已验证的 OpenAI Subscription 与 DeepSeek API；其他 Provider 不推断、不显示。
 
-Kitty 已停止支持。安装器仅保留 `kitty/kitty.conf` 的退役路径：有旧安装基线且仍一致的副本会备份并删除，本地修改或删除仍会阻塞。无基线的个人配置、主题（如 `current-theme.conf`）和目录不会被清理。
+Kitty 已停止支持。安装器仅保留 `kitty/kitty.conf` 的退役路径：有旧安装基线的副本会备份并删除，本地修改或删除按上述冲突确认处理。无基线的个人配置、主题（如 `current-theme.conf`）和目录不会被清理。
 
 在实际仓库位置运行：
 
 ```bash
+bash /path/to/dotbox/install.sh                      # 安装或重装本地已提交版本，不联网拉取
 bash /path/to/dotbox/install.sh update               # 联网获取 upstream，仅快进并安全应用
 bash /path/to/dotbox/install.sh status               # 本地版本、文件一致性、最近检查和自动更新状态
 bash /path/to/dotbox/install.sh disable-auto-update  # 关闭自动更新，保留配置、备份和调度文件
 ```
 
-`status` 不联网，不把上次检查或本地提交当作远程实时最新版。`update` 要求当前分支有远程 upstream，本地领先、分叉、未提交修改、目标冲突或网络错误均停止。所有操作共用非阻塞锁，已有任务运行时请稍后重试。
+`status` 不联网，不把上次检查或本地提交当作远程实时最新版；发现配置差异时显示冲突清单，不修复。`update` 要求当前分支有远程 upstream，本地领先、分叉、未提交修改或网络错误均停止；配置内容冲突仅允许终端手动确认后处理，符号链接和非普通文件仍拒绝。即使仓库版本未变，手动 `update` 也可在批准后恢复被修改或删除的受管文件。所有操作共用非阻塞锁，已有任务运行时请稍后重试。
 
 Linux 自动更新使用 `systemd --user` 的 `dotbox-update.timer`：用户管理器启动 5 分钟后首次检查，此后在每次任务结束 6 小时后再次检查。macOS 使用 `~/Library/LaunchAgents/io.github.chancelyg.dotbox-update.plist`：加载时检查一次，之后以 `21600` 秒为间隔；设备睡眠时不会被唤醒，错过的多个间隔会在唤醒后合并为一次。两者都不是每天某个固定钟点触发。调度器不可用时仍可手动安装和更新；不提供 cron 回退、不提权、不自动启用 Linux linger，退出登录后的运行取决于系统已有设置。Linux 可用 `journalctl --user -u dotbox-update.service` 查看服务输出；其他失败可手动运行 `update` 查看详情。
 
-调度任务绑定实际仓库和 XDG 路径，运行安装时批准的脚本副本，并复用记录的 OpenCode 程序路径检查 v2 版本，避免定时器缺少交互 shell 的 PATH。程序移动后重新安装以刷新路径。仓库内 `install.sh` 变化后，自动更新只同步仓库，暂停配置应用；审阅后手动重新安装才能批准新版脚本。不会自动执行仓库钩子、升级程序或重启 OpenCode 服务。仓库移动后需从新位置重新安装以刷新绑定；同一用户改用其他克隆需要确认，不生成多套调度任务。
+调度任务绑定实际仓库和 XDG 路径，运行安装时批准的脚本副本，并复用记录的 OpenCode 程序路径检查 v2 版本，避免定时器缺少交互 shell 的 PATH。程序移动后重新安装以刷新路径。若本轮拉取改变了 `install.sh`，先停止配置应用，不在旧脚本进程内继续新版逻辑；审阅后在终端重新运行仓库中的 `install.sh` 或 `install.sh update` 可批准新版脚本。后台更新不会自动批准脚本变化。不会自动执行仓库钩子、升级程序或重启 OpenCode 服务。仓库移动后需从新位置重新安装以刷新绑定；同一用户改用其他克隆需要确认，不生成多套调度任务。
 
 安装版本、受管内容基线、批准脚本、最近检查及备份保存在 `${XDG_STATE_HOME:-$HOME/.local/state}/dotbox`，不写入仓库。配置或状态路径含符号链接、与仓库重叠时拒绝安装。普通应用错误会尝试恢复原配置，备份保留供手动恢复；断电或强制终止不保证自动恢复。备份不会自动清理，请按需自行管理。
 
@@ -81,9 +82,9 @@ Linux 自动更新使用 `systemd --user` 的 `dotbox-update.timer`：用户管�
 
 `compaction` 按字段叠加，例如只设 `keep.tokens` 仍保留默认层的 `buffer`。与 v1 不同，v2 的 [`watcher.ignore` 按来源累加](https://github.com/anomalyco/opencode/blob/v2.0.29/packages/core/src/config/plugin/location-watcher.ts)，个人列表不能撤销默认层的忽略项；需要取消这些项时应先调整仓库默认配置，不能通过改受管副本绕过更新保护。权限规则同样追加并按最后匹配决定。Markdown 代理定义在全局 JSON 后加载，个人 JSON 不保证覆盖其所有字段。
 
-非受管 `opencode.json` 已存在时，即使字节相同也跳过。安装器不搬迁或合并个人文件，跳过项不进入受管基线，安装输出和 `status` 会说明未管理。旧受管 `config.json` 仅在仍与基线一致时备份并删除；本地修改或删除会阻塞迁移。无基线的个人 `config.json` 和旧 TOML `config` 保留不动，但不作为 v2 自动加载来源，需用户自行迁移有效设置。受管路径的符号链接及非普通文件仍拒绝。
+非受管 `opencode.json` 已存在时，即使字节相同也跳过。安装器不搬迁或合并个人文件，跳过项不进入受管基线，安装输出和 `status` 会说明未管理。旧受管 `config.json` 会备份并删除，本地修改或删除按上述冲突确认处理。无基线的个人 `config.json` 和旧 TOML `config` 保留不动，但不作为 v2 自动加载来源，需用户自行迁移有效设置。受管路径的符号链接及非普通文件仍拒绝。
 
-仅存在 `opencode.json` 时，OpenCode 原生支持的配置保存操作可能写回它；请先创建个人 `opencode.jsonc` 再进行个人设置。受管默认文件被改写或删除后，更新会按基线保护停止，不会通过重新安装静默重置。个人 JSON 文件不由安装器创建或改写。
+仅存在 `opencode.json` 时，OpenCode 原生支持的配置保存操作可能写回它；请先创建个人 `opencode.jsonc` 再进行个人设置。受管默认文件被改写或删除后，手动安装或更新须明确批准备份并替换，后台更新仍停止，不会静默重置。个人 JSON 文件不由安装器创建或改写。
 
 参考 `opencode.jsonc` 已转为 v2 的 `agents`、`providers`、`permissions`、`mcp.servers` 和 `plugins`；仍只供手动参考，不随安装器分发。代理权限使用有序规则，`shell` / `subagent` 分别替代 v1 的 `bash` / `task`，不改变既有拒绝边界；`/init` 使用 `subagent: false` 留在当前会话。现有技能目录和 `AGENTS.md` 无需为 v2 改名。
 
@@ -117,7 +118,7 @@ Coding / Ops 默认自行查证、形成必要方案并按授权执行验证；�
 
 未经用户 @ 调用时不例行报告未调用代理。一次 @ 仅启动当前 Plan，完成、取消或进入实施后关闭，不永久启用或自动延续到其他任务 / 新 Plan；本轮内部审查与必要补证无需再次 @。调用不改变 Coding 正式 Plan 确认、Ops Local / Low 授权、High 方案及执行双确认、连接确认或 Git 权限；已确认的同份 Plan 和实施中的普通修复不重启流程。触发、自动衔接和五轮限制是提示词协议，不是程序级保证；配置解析不能证明实际调用正确，须用调用轨迹验证，不宣称未测的行为成功。
 
-安装器保留 `plan-designer.md`、`simplicity-reviewer.md` 两个旧路径作为退役对象，不再提供其源定义；只删除有安装基线且仍与基线一致的副本，本地修改或删除仍会阻塞，无基线的个人同名文件不会自动清理。手动安装者应在确认归属后自行移除旧定义，不能盲删个人代理。安装脚本更新需审阅后重新批准；代理更新按上述热更新与验收边界处理。
+安装器保留 `plan-designer.md`、`simplicity-reviewer.md` 两个旧路径作为退役对象，不再提供其源定义；只删除有安装基线的副本，本地修改或删除须按上述流程确认，无基线的个人同名文件不会自动清理。手动复制者应在确认归属后自行移除旧定义，不能盲删个人代理。安装脚本更新需审阅后重新批准；代理更新按上述热更新与验收边界处理。
 
 设计机制参考 [Superpowers brainstorming](https://github.com/obra/superpowers/blob/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills/brainstorming/SKILL.md) / [writing-plans](https://github.com/obra/superpowers/blob/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills/writing-plans/SKILL.md)、[Spec Kit planning](https://github.com/github/spec-kit/blob/838f1184d1b2ed254a99e8b818dbc23aa80a7f1f/templates/commands/plan.md) 和 [wshobson architect](https://github.com/wshobson/agents/blob/156b7a5e7a8b93642628a339ee4039c925b34c7f/plugins/ship-mate/agents/architect.md)；前两者是技能 / 命令工作流，后者是 agent。本仓库自行编写只读设计协议，不引入它们的写文件、提交、审批或平台流程。
 
