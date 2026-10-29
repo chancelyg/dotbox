@@ -239,6 +239,8 @@ show_conflicts() {
 check_local() {
     local file
     for file in "${files[@]}"; do
+        # 已退役且无安装基线的路径不归安装器管理，保留个人文件和链接。
+        [[ -f $repo/$file || -f $current/$file ]] || continue
         safe_path "$config/$file"
         [[ ! -e $config/$file || -f $config/$file ]] || die "目标不是普通文件：$file"
         if [[ -f $current/$file ]]; then
