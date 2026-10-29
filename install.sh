@@ -320,7 +320,7 @@ if (( conflict_count && ! interactive )); then
 fi
 if [[ -d $current && $(<"$current/repository") != "$repo" ]]; then
     [[ $action == install ]] || die '更新仓库与安装绑定不同，请重新安装。'
-    ask "现有安装绑定其他位置，是否改绑到 $repo？" || die '未改绑。'
+    ask "现有安装绑定其他位置，是否改绑到 ${repo}？" || die '未改绑。'
 fi
 
 script_changed=0
@@ -372,7 +372,7 @@ stamp_agent() {
     done <"$candidate/$file"
     [[ $count == 1 ]] || die "代理版本槽必须恰好出现一次：$file"
     # 仅渲染固定正文行；渲染后的候选同时作为目标和安装基线。
-    sed "s/^$marker$/版本标识：dotbox@${revision:0:12}（安装提交：$revision）。/" "$candidate/$file" >"$candidate/$file.stamped"
+    sed "s/^${marker}$/版本标识：dotbox@${revision:0:12}（安装提交：${revision}）。/" "$candidate/$file" >"$candidate/$file.stamped"
     mv "$candidate/$file.stamped" "$candidate/$file"
 }
 for file in "${files[@]}"; do
