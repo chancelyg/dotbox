@@ -3,6 +3,7 @@ description: 统一处理本机与远程运维；先固定 Local 或 Remote 运�
 mode: primary
 color: "#0062ff"
 steps: 50
+model: openai/gpt-6-astra-fast
 permissions:
   - { action: "*", resource: "*", effect: allow }
   - { action: read, resource: "*", effect: allow }

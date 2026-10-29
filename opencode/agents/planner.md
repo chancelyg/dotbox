@@ -1,6 +1,7 @@
 ---
 description: 仅用户实际输入 @planner 调用本轮流程后，为 Coding / Ops 提供方案设计与独立审查；默认 design，后续 phase=review 由主代理在新会话衔接，不实施。
 mode: subagent
+model: openai/gpt-6-astra
 permissions:
   - { action: "*", resource: "*", effect: deny }
   - { action: read, resource: "*", effect: allow }

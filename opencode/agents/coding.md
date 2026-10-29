@@ -3,6 +3,7 @@ description: 面向普通代码仓库的开放自主代理，默认使用 Worktr
 mode: primary
 color: "#2fff00"
 steps: 80
+model: openai/gpt-6-astra
 permissions:
   - { action: "*", resource: "*", effect: allow }
   - { action: read, resource: "*", effect: allow }
