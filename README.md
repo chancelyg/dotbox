@@ -11,7 +11,7 @@ git clone https://github.com/chancelyg/dotbox.git "$HOME/.dotbox"
 bash "$HOME/.dotbox/setup.sh"
 ```
 
-`setup.sh` 从自身位置定位克隆，只写入 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/dotbox.md` 导航，不安装全局代理、技能或配置，也不启动 AI。之后在目标仓库用 Build 按导航自然语言初始化，无需记住克隆路径。
+`setup.sh` 从自身位置定位克隆，只注册 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/commands/onboard.md`，不安装全局代理、技能或其他配置，也不启动 AI。在目标仓库用 Build 执行 `/onboard`，无需记住克隆路径；生成并验证新代理后，切换到它再执行 `/onboard` 收尾，最后才禁用 Build / Plan。后续由项目代理运行 `/onboard update`。
 
 旧安装用户先按上述 README 预览 `uninstall.sh`；确认迁移范围后才使用 `--apply`。`install.sh` 已退役，仅提示并非零退出，不再安装或自动更新。
 
