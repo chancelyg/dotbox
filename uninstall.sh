@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 退出旧版受管安装，不永久删除归档，不接管个人文件。
+# 退出旧版全局规则和自动更新，保留 UI、插件与通用配置。
 set -euo pipefail
 umask 077
 die() { printf '错误：%s\n' "$*" >&2; exit 1; }
@@ -41,11 +41,10 @@ safe_path "$repo" || die '旧仓库路径含链接，需人工核验'
 for path in "$config" "$state"; do
     [[ $path != "$repo" && $path != "$repo/"* && $repo != "$path/"* ]] || die '旧仓库与配置或状态目录重叠'
 done
-# 固定白名单与旧安装器一致；不扫描私有配置、不移动整个目录。
-files=(opencode/opencode.json opencode/cli.json opencode/AGENTS.md
+# 仅退役全局规则；即使有旧基线，也不拆分插件或移走通用配置。
+files=(opencode/AGENTS.md
     opencode/agents/coding.md opencode/agents/ops.md opencode/agents/planner.md
-    opencode/plugins/status-sidebar/index.ts opencode/plugins/status-sidebar/rpc.ts opencode/plugins/status-sidebar/tui.tsx
-    opencode/config.json opencode/agents/plan-designer.md opencode/agents/simplicity-reviewer.md
+    opencode/agents/plan-designer.md opencode/agents/simplicity-reviewer.md
     opencode/commands/init.md opencode/skills/agent-browser/SKILL.md
     opencode/skills/responsive-design/SKILL.md opencode/skills/responsive-design/references/details.md
     opencode/skills/accessibility-compliance/SKILL.md opencode/skills/accessibility-compliance/references/details.md
@@ -54,7 +53,7 @@ files=(opencode/opencode.json opencode/cli.json opencode/AGENTS.md
     opencode/skills/ops-workflows/SKILL.md opencode/skills/ops-workflows/references/memory.md
     opencode/skills/ops-workflows/references/workspace-git.md opencode/skills/ops-workflows/references/long-tasks.md
     opencode/skills/ops-hosts/SKILL.md opencode/skills/THIRD_PARTY_NOTICES.md
-    opencode/skills/LICENSES/wshobson-agents-MIT.txt kitty/kitty.conf)
+    opencode/skills/LICENSES/wshobson-agents-MIT.txt)
 selected=(); missing=(); retained=()
 selected_count=0; missing_count=0; retained_count=0
 for file in "${files[@]}"; do
@@ -108,7 +107,8 @@ else
         scheduler_count=$((scheduler_count + 1))
     fi
 fi
-printf '可归档配置：%s；缺失：%s；保留：%s；调度文件：%s\n' "$selected_count" "$missing_count" "$retained_count" "$scheduler_count"
+printf '范围：仅旧全局代理、技能、命令、规则及自动更新；侧边栏整套文件、CLI、通用配置和 Kitty 配置不处理。\n'
+printf '可归档规则文件：%s；缺失：%s；范围内保留：%s；调度文件：%s\n' "$selected_count" "$missing_count" "$retained_count" "$scheduler_count"
 # Bash 3.2 的 nounset 不支持直接展开空数组。
 for file in ${selected[@]+"${selected[@]}"}; do printf '  归档 %s\n' "$file"; done
 for file in ${retained[@]+"${retained[@]}"}; do printf '  保留 %s\n' "$file"; done
