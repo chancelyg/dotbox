@@ -64,7 +64,7 @@ v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设�
 ### 流程与技能选择
 
 - [Coding](agents/coding.md)：通用开发工作流；测试方法按任务需要选择，不把 TDD 作为额外初始化门槛。
-- [Ops](agents/ops.md)：运维授权与执行边界。两个主要技能是 [ops-hosts](skills/ops-hosts/SKILL.md)（主机管理）与 [ops-workflows](skills/ops-workflows/SKILL.md)（运维开发验证与发布、记忆、工作区/Git、长任务）；引入其必要参考文件，不把每份 runbook 都技能化。
+- [Ops](agents/ops.md)：运维授权与执行边界。按任务选用 [ops-hosts](skills/ops-hosts/SKILL.md)（主机管理）、[ops-workflows](skills/ops-workflows/SKILL.md)（运维开发验证与发布、记忆、工作区/Git、长任务）及 [ops-investigation](skills/ops-investigation/SKILL.md)（深入调查、因果核验与结论优先汇报）；引入其必要参考文件，不把每份 runbook 都技能化。
 - [Planner](agents/planner.md)：用户通过 `@planner`、明确自然语言要求调用，或同意主代理明确的调用建议时进入规划流程；方案包含目标与非目标、复杂度及依据、AI 修改 / 验证 / 总耗时区间、外部等待与不确定因素，不用人类编码工时替代。
 - [Reviewer](agents/reviewer.md)：上述流程形成方案后必须独立审查边界、过度设计和语言，每轮新会话；同一方案至少完成一次审查、最多五次调用（失败也计次），通过即结束，实质修订在剩余次数内复审。第五轮修改后未复审或代理不可用须如实说明，主代理自审不能代替。只讨论代理或普通“先想个方案”不触发该流程；规划与审查均不代替实施授权或行为验证，不自动切换回内置 Plan。
 - 开发领域按需选用 [响应式](skills/responsive-design/SKILL.md)、[无障碍](skills/accessibility-compliance/SKILL.md)、[API 设计](skills/api-design-principles/SKILL.md)、[PostgreSQL](skills/postgresql-table-design/SKILL.md)。保留 [第三方来源与许可](skills/THIRD_PARTY_NOTICES.md)。
@@ -106,6 +106,12 @@ bash uninstall.sh --apply  # 交互确认后执行
 [`cli.json`](cli.json)、[状态侧边栏](plugins/status-sidebar/)、[`opencode.json`](opencode.json) 和 [`opencode.jsonc`](opencode.jsonc) 保留供按需审阅选用，setup 不安装。CLI 配置属于用户级终端界面设置；插件按 v2 官方方式配置，不能因引入项目代理就顺带覆盖个人 UI、模型或 MCP。侧边栏仅显示可验证的额度指标，不把凭证输出到界面、日志或缓存。
 
 ## 更新记录
+
+### Ops 深入调查与根因摘要
+
+- 新增 `ops-investigation`：沿请求路径比较正常与异常，用支持证据、反证和最小取证收敛原因；区分已确认原因、较可信假设及尚未定位，不将相关性或重启恢复当作根因证明。
+- 调查汇报先给结论，再给决定性证据、影响/恢复状态和必要下一步；按问题复杂度展开因果链，不输出排查流水账。保留应急缓解和原有授权边界，不新增调查代理或强制多代理循环。
+- 已选 Ops 的项目可按更新流程共同审阅 Ops 入口及新技能，生成自包含项目文件。这里只更新源模板，不自动安装、同步到当前项目或全局配置；静态检查与合成案例演练不代表原生加载或真实故障调查已验证。
 
 ### Planner / Reviewer 拆分与自然语言调用
 
