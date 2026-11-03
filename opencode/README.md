@@ -32,7 +32,8 @@
 | --- | --- |
 | 项目 `AGENTS.md` | 项目事实、精确验证命令与前置条件、特殊边界、已有文档导航及简短引入记录；不复制通用代理流程 |
 | `.opencode/agents/coding.md` **或** `ops.md` | 所选主模式完整流程与授权规则，适配项目实际路径 |
-| `.opencode/agents/planner.md` | 保留可按需调用的只读设计/审查子代理及完整交接协议 |
+| `.opencode/agents/planner.md` | 按需只读规划子代理及主代理完整交接协议 |
+| `.opencode/agents/reviewer.md` | 独立只读方案审查子代理，每轮检查边界、过度设计与语言 |
 | `.opencode/skills/` | 仅必要专项方法及其被引用的支持文件、来源与许可 |
 | 原有项目原生配置，或 `.opencode/opencode.jsonc` | 设置所选主模式的 `default_agent`，移除本次引入曾写入的 Build / Plan 禁用项；保留其他有效设置 |
 
@@ -44,7 +45,7 @@
 
 V2 会重新加载配置，且 `default_agent` 不会替换当前会话已经选择的代理。**保留 Build / Plan 可选**，不必在安装中切换代理来完成禁用，也不靠重启后台服务或等待固定秒数解决切换问题。
 
-1. 验证生成文件、有效配置和代理列表：所选 Coding/Ops 是默认代理，Build / Plan 仍可选，Planner / Explore / General 未受影响。既有禁用来自其他来源、管理策略或用户自定义时报告冲突，不擅自覆盖。
+1. 验证生成文件、有效配置和代理列表：所选 Coding/Ops 是默认代理，Build / Plan 仍可选，Planner / Reviewer 已加载，Explore / General 未受影响。既有禁用来自其他来源、管理策略或用户自定义时报告冲突，不擅自覆盖。
 2. 提醒用户当前会话可能继续使用先前选定的 Build/Plan；需要立即使用新代理时手动切换或新建会话。无需再次运行 `/onboard` 收尾。
 
 选 Coding 时的最小配置如下；选 Ops 时将 `default_agent` 改为 `ops`：
@@ -56,7 +57,7 @@ V2 会重新加载配置，且 `default_agent` 不会替换当前会话已经选
 }
 ```
 
-此片段须与已生成的主代理配合，并按现有配置增量合并，不是覆盖整份配置的模板。Build / Plan 与其他已存在的用户代理保留；`planner`、内置 `explore` 与 `general` 也保留。已确认归属的旧 `plan-designer` / `simplicity-reviewer` 如需迁移，应单独审阅，不因更换默认代理一并禁用。
+此片段须与已生成的主代理配合，并按现有配置增量合并，不是覆盖整份配置的模板。Build / Plan 与其他已存在的用户代理保留；`planner`、`reviewer`、内置 `explore` 与 `general` 也保留。同名 Reviewer 已有自定义职责时先报告冲突，不直接覆盖。已确认归属的旧 `plan-designer` / `simplicity-reviewer` 如需迁移，应单独审阅，不因更换默认代理一并禁用。
 
 v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设为默认”。`default_agent` 只影响尚未选择代理的会话，**不会替换已有会话的选择**。权限规则追加且最后匹配生效，`skills` 数组跨来源累加；不能把“项目配置优先”解释成所有字段整块覆盖。OpenCode 内置技能依然存在，不宣称项目只剩所选技能。
 
@@ -64,7 +65,8 @@ v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设�
 
 - [Coding](agents/coding.md)：通用开发工作流；测试方法按任务需要选择，不把 TDD 作为额外初始化门槛。
 - [Ops](agents/ops.md)：运维授权与执行边界。两个主要技能是 [ops-hosts](skills/ops-hosts/SKILL.md)（主机管理）与 [ops-workflows](skills/ops-workflows/SKILL.md)（运维开发验证与发布、记忆、工作区/Git、长任务）；引入其必要参考文件，不把每份 runbook 都技能化。
-- [Planner](agents/planner.md)：用户明确 `@planner` 时按源协议进入设计/独立审查；结果不代替实施授权或行为验证，不自动切换回内置 Plan。
+- [Planner](agents/planner.md)：用户通过 `@planner`、明确自然语言要求调用，或同意主代理明确的调用建议时进入规划流程；方案包含目标与非目标、复杂度及依据、AI 修改 / 验证 / 总耗时区间、外部等待与不确定因素，不用人类编码工时替代。
+- [Reviewer](agents/reviewer.md)：上述流程形成方案后必须独立审查边界、过度设计和语言，每轮新会话；同一方案至少完成一次审查、最多五次调用（失败也计次），通过即结束，实质修订在剩余次数内复审。第五轮修改后未复审或代理不可用须如实说明，主代理自审不能代替。只讨论代理或普通“先想个方案”不触发该流程；规划与审查均不代替实施授权或行为验证，不自动切换回内置 Plan。
 - 开发领域按需选用 [响应式](skills/responsive-design/SKILL.md)、[无障碍](skills/accessibility-compliance/SKILL.md)、[API 设计](skills/api-design-principles/SKILL.md)、[PostgreSQL](skills/postgresql-table-design/SKILL.md)。保留 [第三方来源与许可](skills/THIRD_PARTY_NOTICES.md)。
 - [agent-browser](skills/agent-browser/SKILL.md) 仅在浏览器自动化任务需要时选用，不默认安装浏览器工具或配置 MCP。
 
@@ -76,7 +78,7 @@ v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设�
 
 静态检查只能证明文件和配置结构，不能证明模型会遵守授权、Planner 调用或 Worktree 流程。实际行为验收另按用户授权进行；初始化不默认执行真实 SSH、部署、提交、合并或推送，也不自动重启服务。
 
-在项目 `AGENTS.md` 保留一条短记录，例如“dotbox：上次审阅 `<完整提交号>`；选用 Coding、Planner、API 设计；项目例外：原地开发；默认 Coding，Build / Plan 可选”。提交号由代理对命令定位的克隆执行 `git -C <克隆目录> rev-parse HEAD` 取得；有未提交差异时注明“另含未提交差异，尚无对应提交”，不虚构本轮 SHA。该记录表示审阅基线，不是运行时加载或当前代理身份的证明，不另建状态系统。
+在项目 `AGENTS.md` 保留一条短记录，例如“dotbox：上次审阅 `<完整提交号>`；选用 Coding、Planner、Reviewer、API 设计；项目例外：原地开发；默认 Coding，Build / Plan 可选”。提交号由代理对命令定位的克隆执行 `git -C <克隆目录> rev-parse HEAD` 取得；有未提交差异时注明“另含未提交差异，尚无对应提交”，不虚构本轮 SHA。该记录表示审阅基线，不是运行时加载或当前代理身份的证明，不另建状态系统。
 
 ## 后续更新
 
@@ -104,6 +106,13 @@ bash uninstall.sh --apply  # 交互确认后执行
 [`cli.json`](cli.json)、[状态侧边栏](plugins/status-sidebar/)、[`opencode.json`](opencode.json) 和 [`opencode.jsonc`](opencode.jsonc) 保留供按需审阅选用，setup 不安装。CLI 配置属于用户级终端界面设置；插件按 v2 官方方式配置，不能因引入项目代理就顺带覆盖个人 UI、模型或 MCP。侧边栏仅显示可验证的额度指标，不把凭证输出到界面、日志或缓存。
 
 ## 更新记录
+
+### Planner / Reviewer 拆分与自然语言调用
+
+- Planner 只负责规划，新增 Reviewer 独立审查方案；取消同一代理按 `phase` 切换职责。支持明确自然语言调用及对明确调用建议的同意，保留 `@planner`；仅提及代理、普通规划请求或任务失败不自动启动。
+- 方案形成后必须进入独立审查，每轮检查方案边界、过度设计和语言；单方案至少一次、最多五次审查调用，失败也计次，不因修订或重新设计重置。缺少有效审查不能以主代理自审冒充，达到上限仍未通过或修改后未复审须明确报告。
+- 方案新增低 / 中 / 高复杂度及理由、AI 修改与验证的耗时区间和总估期，外部等待单列；证据不足时允许明确无法可靠估计，不编造承诺。表达减少套话和自造名词，保留行业术语。
+- 已有项目按更新流程共同审阅 Coding/Ops、Planner 并引入 Reviewer，保留自定义职责与权限，检查同名冲突和实际加载。不只更新 Planner 而留下旧触发规则；源模板修改不自动同步当前项目或全局配置。静态检查不证明自然语言触发与五轮流程已实测。
 
 ### Ops 文件读取与传输授权
 

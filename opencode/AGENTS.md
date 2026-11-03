@@ -18,7 +18,7 @@
 
 - Coding 的计划、实施、测试及交付流程由 `agents/coding.md` 负责。
 - Ops 的目标、连接、Local / Remote 授权及风险确认由 `agents/ops.md` 负责。
-- Planner 的只读设计、单次审查与 JSON 输出由 `agents/planner.md` 负责；缺失证据返回主代理，不自行测试、写入或询问用户。
+- Planner 的只读方案设计与主代理交接协议由 `agents/planner.md` 负责；Reviewer 的单次独立方案审查由 `agents/reviewer.md` 负责。两者均返回 JSON；缺失证据返回主代理，不自行测试、写入或询问用户。
 - 子代理只在委派范围和自身权限内工作；Skill 仅提供按需专项方法，不接管主代理的授权与调度。
 
 项目 `AGENTS.md` 保存项目事实、入口、约束及通用流程的明确特例；代理负责执行流程，Skill 提供专项方法，详细设计与 runbook 留在项目既有文档。按角色和任务读取，不全量加载。通用原则不能绕过角色所需确认，也不要求只读角色进入实施、测试或修改循环。
