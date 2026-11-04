@@ -67,6 +67,7 @@ v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设�
 - [Ops](agents/ops.md)：运维授权与执行边界。按任务选用 [ops-hosts](skills/ops-hosts/SKILL.md)（主机管理）、[ops-workflows](skills/ops-workflows/SKILL.md)（运维开发验证与发布、记忆、工作区/Git、长任务）及 [ops-investigation](skills/ops-investigation/SKILL.md)（深入调查、因果核验与结论优先汇报）；引入其必要参考文件，不把每份 runbook 都技能化。
 - [Planner](agents/planner.md)：用户通过 `@planner`、明确自然语言要求调用，或同意主代理明确的调用建议时进入规划流程；方案包含目标与非目标、复杂度及依据、AI 修改 / 验证 / 总耗时区间、外部等待与不确定因素，不用人类编码工时替代。
 - [Reviewer](agents/reviewer.md)：上述流程形成方案后必须独立审查边界、过度设计和语言，每轮新会话；同一方案至少完成一次审查、最多五次调用（失败也计次），通过即结束，实质修订在剩余次数内复审。第五轮修改后未复审或代理不可用须如实说明，主代理自审不能代替。只讨论代理或普通“先想个方案”不触发该流程；规划与审查均不代替实施授权或行为验证，不自动切换回内置 Plan。
+- **运维开发的规模约定**：Ops 在新增或明显改写脚本、监控及自动化的设计前，提出交付形态、使用范围和不承担的职责，由用户确认；并入已有需求/方案确认，已明确的同一约定不重复询问，普通调查及规模不变的局部修复不新增确认。原始需求与该约定贯穿 Planner、Reviewer、实施交接、重新规划及上下文压缩，不让最新技术方案替换它们。单文件或无新依赖不代表简单；新增保障先核实实际后果及已有机制，超出规模先说明差异并由用户决定。具体规则见 [Ops](agents/ops.md#运维开发的规模约定)，开发验证参考不得反向生成额外功能。
 - 开发领域按需选用 [响应式](skills/responsive-design/SKILL.md)、[无障碍](skills/accessibility-compliance/SKILL.md)、[API 设计](skills/api-design-principles/SKILL.md)、[PostgreSQL](skills/postgresql-table-design/SKILL.md)。保留 [第三方来源与许可](skills/THIRD_PARTY_NOTICES.md)。
 - [agent-browser](skills/agent-browser/SKILL.md) 仅在浏览器自动化任务需要时选用，不默认安装浏览器工具或配置 MCP。
 
@@ -106,6 +107,13 @@ bash uninstall.sh --apply  # 交互确认后执行
 [`cli.json`](cli.json)、[状态侧边栏](plugins/status-sidebar/)、[`opencode.json`](opencode.json) 和 [`opencode.jsonc`](opencode.jsonc) 保留供按需审阅选用，setup 不安装。CLI 配置属于用户级终端界面设置；插件按 v2 官方方式配置，不能因引入项目代理就顺带覆盖个人 UI、模型或 MCP。侧边栏仅显示可验证的额度指标，不把凭证输出到界面、日志或缓存。
 
 ## 更新记录
+
+### 运维开发规模确认与全流程保留
+
+- Ops 在展开新增或明显改写自动化的设计前确认规模定位，而不只确认功能；沿用现有方案与交接字段，不新增规模档案或评分流程，不改变连接、High、删除和发布授权。
+- Planner、Reviewer 同时接收原始需求、用户确认的规模约定、项目硬约束和代理候选设计；方案与压缩摘要保留规模约定，缺失时不能由当前架构倒推。审查先判断是否符合规模，再检查设计自洽性，不把实现需要当成用户需求。
+- 防重、持久化、恢复和常驻组件须有实际依据；为新增机制继续加保障时先回查上游设计。超出规模须由用户决定，简化则从原始需求重建最小方案，不默认继承旧设施或让用户逐项裁剪技术清单。
+- 开发与验证要求按实际输入和风险适用，不为检查项新增功能，不以缩减代码为由弱化必要安全和错误处理。已选 Ops 的项目共同审阅 Ops、Planner、Reviewer 及 `ops-workflows/references/development-verification.md`；源模板不自动同步到当前项目、其他项目或全局配置，静态检查不证明模型实际行为。
 
 ### Ops 深入调查与根因摘要
 
