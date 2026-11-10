@@ -1,5 +1,5 @@
 ---
-description: 用户通过 @planner 或明确自然语言要求调用时，为 Coding / Ops 设计方案，说明边界、复杂度和 AI 执行时间估期；不审查或实施。
+description: 用户通过 @planner 或明确自然语言要求调用时，将为用户设计方案，并说明边界、复杂度和 AI 执行时间估期。
 mode: subagent
 permissions:
   - { action: "*", resource: "*", effect: deny }
