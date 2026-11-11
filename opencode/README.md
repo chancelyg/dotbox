@@ -24,9 +24,9 @@
 
 - **Coding 或 Ops**：选择一个主模式；说明选用的流程、必要技能与拟修改文件。普通项目不额外强制 TDD 或多代理调查。
 - **Coding** 默认保留源代理完整的 Worktree、计划、实施、验证、交付与受授权 Git 流程；仅由已确认的项目约定覆盖，例如原地开发，不把默认流程删成简短口号。
-- **Ops** 从单文件代理引入授权、主机管理、调查、开发验证等操作协议，结合目标项目现有 runbook 适配。不依赖额外 Ops 技能，不要求访问模板作者的运维仓库，也不复制私有主机清单。
+- **Ops** 结合共同原则，引入代理中的授权、主机管理、调查、开发验证等操作协议，结合目标项目现有 runbook 适配。不依赖额外 Ops 技能，不要求访问模板作者的运维仓库，也不复制私有主机清单。
 - 展示现有自定义主代理、全局遗留与所选模式的冲突。**不以选择默认代理为由禁用 Build / Plan 或用户其他主代理**；已有禁用项需核对来源，仅移除本次引入曾写入的 Build / Plan 禁用项，不覆盖更高优先级的管理策略。
-- 模型继承用户现有选择，不硬编码 Provider 或模型；个人 MCP、凭证与无关配置不动。全局偏好源 [`AGENTS.md`](AGENTS.md) 仅作参考，不盲目复制到项目。
+- 模型继承用户现有选择，不硬编码 Provider 或模型；个人 MCP、凭证与无关配置不动。共同原则见 [`AGENTS.md`](AGENTS.md)，引入时与项目已有规则合并，保留有效约定，重要差异集中确认，不盲目覆盖。
 
 项目事实不足时标明未知，只就影响产出的缺口澄清；不猜测测试命令，不为形式创建空文档或技能。
 
@@ -36,8 +36,8 @@
 
 | 文件 | 内容边界 |
 | --- | --- |
-| 项目 `AGENTS.md` | 项目事实、精确验证命令与前置条件、特殊边界、已有文档导航及简短引入记录；不复制通用代理流程 |
-| `.opencode/agents/coding.md` **或** `ops.md` | 所选主模式完整流程与授权规则，适配项目实际路径 |
+| 项目 `AGENTS.md` | 合并共同原则，保留项目事实、精确验证命令与前置条件、特殊边界、已有文档导航及简短引入记录；不复制角色专属流程 |
+| `.opencode/agents/coding.md` **或** `ops.md` | 所选主模式的专属流程与授权要求，适配项目实际路径，与项目 `AGENTS.md` 配合使用 |
 | `.opencode/agents/planner.md` | 按需只读规划子代理及主代理完整交接协议 |
 | `.opencode/agents/reviewer.md` | 独立只读方案审查子代理，每轮检查边界、过度设计与语言 |
 | `.opencode/skills/` | 仅必要专项方法及其被引用的支持文件、来源与许可 |
@@ -77,7 +77,7 @@ v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设�
 - 开发领域按需选用 [响应式](skills/responsive-design/SKILL.md)、[无障碍](skills/accessibility-compliance/SKILL.md)、[API 设计](skills/api-design-principles/SKILL.md)、[PostgreSQL](skills/postgresql-table-design/SKILL.md)。保留 [第三方来源与许可](skills/THIRD_PARTY_NOTICES.md)。
 - [agent-browser](skills/agent-browser/SKILL.md) 仅在浏览器自动化任务需要时选用，不默认安装浏览器工具或配置 MCP。
 
-**代理承载流程，AGENTS 承载项目事实和特殊边界，skill 承载专项方法。** 避免将相同约束复制到多处。
+**代理承载角色专属流程，AGENTS 承载共同原则、项目事实和特殊边界，skill 承载专项方法。** 避免将相同约束复制到多处。引入时须同时合并共同原则，不能只复制精简后的代理，也不依赖模板克隆中的 AGENTS。
 
 ### 验收与记录
 
@@ -113,6 +113,12 @@ bash uninstall.sh --apply  # 交互确认后执行
 [`cli.json`](cli.json)、[状态侧边栏](plugins/status-sidebar/)、[`opencode.json`](opencode.json) 和 [`opencode.jsonc`](opencode.jsonc) 保留供按需审阅选用，setup 不安装。CLI 配置属于用户级终端界面设置；插件按 v2 官方方式配置，不能因引入项目代理就顺带覆盖个人 UI、模型或 MCP。侧边栏仅显示可验证的额度指标，不把凭证输出到界面、日志或缓存。
 
 ## 更新记录
+
+### Coding / Ops 共同原则抽取
+
+- 将授权内自主执行、上下文与调查、验证与文档、长期记忆和汇报原则集中到 `AGENTS.md`，同时纳入凭证保护、Skill 使用和普通错误处理原则。
+- Coding 保留开发与 Git 流程，Ops 保留主机、连接、实施和恢复流程，移除已集中管理的描述。角色记忆文件名仍由各代理指定。
+- 项目引入和更新须同时合并共同原则与所选代理，保留项目已有约定和私有配置，生成结果不依赖模板克隆。本次仅修改源文件，不自动同步项目或全局配置。
 
 ### Planner 直接澄清与 Reviewer 职责划分
 
