@@ -18,7 +18,7 @@
 
 - 根 `AGENTS.md`：本仓库的开发约定，不是客户端全局规则的安装源。
 - `opencode/AGENTS.md`：供客户端安装的共同规则。
-- `opencode/agents/`：Coding、Ops、Planner、Reviewer 标准代理；`opencode/skills/`：专项技能及支持文件。
+- `opencode/agents/`：Coding、Ops 主模式，Discuss、Investigator、Planner、Reviewer 子代理；`opencode/skills/`：专项技能及支持文件。
 - `opencode/commands/dotbox.md`：项目定位命令，不绑定固定代理或模型。
 - `opencode/cli.json`、`opencode/opencode.json(c)`、`opencode/plugins/`：独立选用的配置和插件，不由三个脚本整套安装。
 - `codex/`、`kitty/`：其他工具配置，只在用户明确要求时处理。

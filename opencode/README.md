@@ -71,8 +71,11 @@ v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设�
 
 - [Coding](agents/coding.md)：通用开发工作流；测试方法按任务需要选择，不把 TDD 作为额外初始化门槛。
 - [Ops](agents/ops.md)：包含授权、连接与主机管理、调查、开发发布、工作区/Git、长任务及记忆协议，不再单独引入 Ops 技能。
-- [Planner](agents/planner.md)：用户通过 `@planner`、明确自然语言要求调用，或同意主代理明确的调用建议时进入规划流程。可直接澄清需求，并在用户明确授权后读取必要的 `.env`、私钥等敏感文件，不输出敏感值。向主代理返回包含方案、复杂度和 AI 执行估期的 JSON；主代理向用户展示正常方案文本，不展示 JSON，不用人类编码工时替代 AI 估期。
-- [Reviewer](agents/reviewer.md)：独立检查需求与范围、设计必要性、验证依据和语言表达，返回 JSON；不检查复杂度分级与 AI 估期，不管理轮次。主代理每轮新建审查会话，默认最多五轮，通过即结束；达到上限仍未通过时等待用户决定是否继续，未复审或代理不可用须如实说明，主代理自审不能代替。只讨论代理或普通“先想个方案”不触发该流程；规划与审查均不代替实施授权或行为验证，不自动切换回内置 Plan。
+- [Discuss](agents/discuss.md)：只读讨论子代理，支持 `@discuss` 或“先讨论一下”“比较方向”等自然语言请求。与用户澄清需求、质疑前提和明确取舍，可委派 Investigator 深入补证，不自动形成正式实施计划。
+- [Investigator](agents/investigator.md)：只读调查子代理，支持 `@investigator` 或“查清原因”“核实判断”“查齐设计依据”等自然语言请求。主动追查因果与反证，补齐影响设计的事实；有独立证据线时并发委派同样只读的 Investigator 子任务，子任务不再委派。不执行 Shell、测试或远程命令；需要运行补证时交回主代理按授权处理，不把静态分析说成运行验证。
+- [Planner](agents/planner.md)：支持 `@planner`、明确要求形成正式实施方案的自然语言，或用户同意主代理明确的调用建议。自然语言触发须有充分讨论和明确方向；`@planner` 可立即调用，但不能绕过关键事实缺口。仅委派 Reviewer，负责审核轮次及修订；以正常中文交付已通过审核的完整方案、复杂度和 AI 执行估期，不承接开放式讨论或深入查因。
+- [Reviewer](agents/reviewer.md)：由 Planner 调用，独立检查需求与范围、设计必要性、验证依据和语言表达，返回审核结果；不检查复杂度与 AI 估期，不管理轮次。Planner 每轮新建审核会话，默认最多五轮，通过即结束；未通过不作为最终方案交付。
+- dotbox 仅提供 Coding / Ops 两种主模式，不因此禁用 OpenCode 内置或用户自定义代理。讨论、调查和规划按意图分别调用，不强制串联，不将认可方向当作实施授权。自然语言路由依赖模型遵循规则，并非关键词匹配器；完整边界见 [共同规则](AGENTS.md#调用边界)。子代理直接提问不可用时，由主代理转达必要问题和回答。
 - **运维开发的规模约定**：设计前明确交付形态、使用范围和不承担的职责，重要分歧并入方案确认。具体规则见 [Ops](agents/ops.md#运维开发的规模约定)，不把验证要求变成额外功能清单。
 - 开发领域按需选用 [响应式](skills/responsive-design/SKILL.md)、[无障碍](skills/accessibility-compliance/SKILL.md)、[API 设计](skills/api-design-principles/SKILL.md)、[PostgreSQL](skills/postgresql-table-design/SKILL.md)。保留 [第三方来源与许可](skills/THIRD_PARTY_NOTICES.md)。
 - [agent-browser](skills/agent-browser/SKILL.md) 仅在浏览器自动化任务需要时选用，不默认安装浏览器工具或配置 MCP。

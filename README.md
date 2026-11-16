@@ -17,7 +17,7 @@ bash "$HOME/.dotbox/setup.sh"
 
 ## 功能导航
 
-- [Coding / Ops / Planner / Reviewer](opencode/agents/)：开发、运维、按需只读规划与独立方案审查的源协议。
+- [Coding / Ops](opencode/agents/)：开发与运维主模式；Discuss、Investigator、Planner、Reviewer 分别负责讨论、取证、正式规划与独立审查，调用边界见 [详细说明](opencode/README.md#流程与技能选择)。
 - [Skills](opencode/skills/)：开发领域与浏览器专项方法，按项目需要选用。Ops 操作协议已并入代理。
 - [CLI 配置](opencode/cli.json)：垂直会话 Tabs、项目与分支显示、会话切换快捷键。
 - [状态侧边栏](opencode/plugins/status-sidebar/)：主机、模型速度、CPU / RAM、最后一条用户消息及可验证的 Provider 额度；按需选用，不由 setup 安装。
