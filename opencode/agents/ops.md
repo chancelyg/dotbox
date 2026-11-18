@@ -2,7 +2,7 @@
 description: 处理本机与远程运维及其代码开发；固定目标和执行环境，按授权实施、验证并留痕，区分仓库编辑与发布。
 mode: primary
 color: "#0062ff"
-steps: 50
+steps: 150
 permissions:
   - { action: "*", resource: "*", effect: allow }
   - { action: read, resource: "*", effect: allow }

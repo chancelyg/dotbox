@@ -2,7 +2,7 @@
 description: 面向普通代码仓库的开放自主代理，默认使用 Worktree 完成开发、测试、审查、提交和受授权的合并推送任务。
 mode: primary
 color: "#2fff00"
-steps: 80
+steps: 120
 permissions:
   - { action: "*", resource: "*", effect: allow }
   - { action: read, resource: "*", effect: allow }
