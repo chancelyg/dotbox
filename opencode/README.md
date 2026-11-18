@@ -73,8 +73,8 @@ v2 的 `agents.<id>.disabled: true` 会移除对应代理，不等于“不设�
 - [Ops](agents/ops.md)：包含授权、连接与主机管理、调查、开发发布、工作区/Git、长任务及记忆协议，不再单独引入 Ops 技能。
 - [Discuss](agents/discuss.md)：只读讨论子代理，支持 `@discuss` 或“先讨论一下”“比较方向”等自然语言请求。与用户澄清需求、质疑前提和明确取舍，可委派 Investigator 深入补证，不自动形成正式实施计划。
 - [Investigator](agents/investigator.md)：只读调查子代理，支持 `@investigator` 或“查清原因”“核实判断”“查齐设计依据”等自然语言请求。主动追查因果与反证，补齐影响设计的事实；有独立证据线时并发委派同样只读的 Investigator 子任务，子任务不再委派。不执行 Shell、测试或远程命令；需要运行补证时交回主代理按授权处理，不把静态分析说成运行验证。
-- [Planner](agents/planner.md)：支持 `@planner`、明确要求形成正式实施方案的自然语言，或用户同意主代理明确的调用建议。自然语言触发须有充分讨论和明确方向；`@planner` 可立即调用，但不能绕过关键事实缺口。仅委派 Reviewer，负责审核轮次及修订；以正常中文交付已通过审核的完整方案、复杂度和 AI 执行估期，不承接开放式讨论或深入查因。
-- [Reviewer](agents/reviewer.md)：由 Planner 调用，独立检查需求与范围、设计必要性、验证依据和语言表达，返回审核结果；不检查复杂度与 AI 估期，不管理轮次。Planner 每轮新建审核会话，默认最多五轮，通过即结束；未通过不作为最终方案交付。
+- [Planner](agents/planner.md)：支持 `@planner`、明确要求形成正式实施方案的自然语言，或用户同意主代理明确的调用建议。自然语言触发须有充分讨论和明确方向；`@planner` 可立即调用，但不能绕过关键事实缺口。只负责设计及根据审核意见修订完整方案，并提供复杂度和 AI 执行估期；不调用 Reviewer、不管理审核轮次，也不承接开放式讨论或深入查因。
+- [Reviewer](agents/reviewer.md)：由主代理为每轮审核新建独立会话，检查当前完整方案的需求与范围、设计必要性、验证依据和语言表达，返回审核结果；不调用 Planner、不检查复杂度与 AI 估期，也不管理轮次。主代理在 Planner 与 Reviewer 之间转交完整方案和审核意见，默认最多五轮；未通过不作为最终方案交付。
 - dotbox 仅提供 Coding / Ops 两种主模式，不因此禁用 OpenCode 内置或用户自定义代理。讨论、调查和规划按意图分别调用，不强制串联，不将认可方向当作实施授权。自然语言路由依赖模型遵循规则，并非关键词匹配器；完整边界见 [共同规则](AGENTS.md#调用边界)。子代理直接提问不可用时，由主代理转达必要问题和回答。
 - **运维开发的规模约定**：设计前明确交付形态、使用范围和不承担的职责，重要分歧并入方案确认。具体规则见 [Ops](agents/ops.md#运维开发的规模约定)，不把验证要求变成额外功能清单。
 - 开发领域按需选用 [响应式](skills/responsive-design/SKILL.md)、[无障碍](skills/accessibility-compliance/SKILL.md)、[API 设计](skills/api-design-principles/SKILL.md)、[PostgreSQL](skills/postgresql-table-design/SKILL.md)。保留 [第三方来源与许可](skills/THIRD_PARTY_NOTICES.md)。
@@ -116,6 +116,12 @@ bash uninstall.sh --apply  # 交互确认后执行
 [`cli.json`](cli.json)、[状态侧边栏](plugins/status-sidebar/)、[`opencode.json`](opencode.json) 和 [`opencode.jsonc`](opencode.jsonc) 保留供按需审阅选用，setup 不安装。CLI 配置属于用户级终端界面设置；插件按 v2 官方方式配置，不能因引入项目代理就顺带覆盖个人 UI、模型或 MCP。侧边栏仅显示可验证的额度指标，不把凭证输出到界面、日志或缓存。
 
 ## 更新记录
+
+### Planner / Reviewer 扁平调度
+
+- 移除 Planner 调用 Reviewer 的嵌套关系；Planner 只设计和修订，Reviewer 只独立审核，二者均由 Coding / Ops 主代理调用。
+- 主代理负责送审、转达 `REVISE` / `BLOCKED`、补证和最多五轮的状态核对。Reviewer 每轮使用新会话，不依赖 Planner 或前轮上下文；当前完整方案通过后才向用户展示为待确认方案。
+- 本次只调整源模板和说明，不自动同步或安装到真实客户端。静态一致性检查不代表多代理行为已经实测。
 
 ### Coding / Ops 共同原则抽取
 
