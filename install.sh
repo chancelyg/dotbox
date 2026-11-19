@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# 保留旧入口用于说明退役；不转调脚本，不修改文件或联网。
-printf '%s\n' 'install.sh 已退役。' \
-    '旧安装：运行 bash uninstall.sh 预览，bash uninstall.sh --apply 确认归档。' \
-    '新入口：运行 bash setup.sh 注册 /onboard，参阅 opencode/README.md。' \
-    '旧定时任务执行独立 runner 副本；本提示不代表它已停止。' >&2
+# 兼容保留的退役入口；不转调脚本，不修改文件或联网。
+printf '%s\n' \
+    'install.sh 已退役，仅为兼容旧调用方式而保留。' \
+    '首次安装：bash setup.sh' \
+    '更新受管文件：bash update.sh' \
+    '卸载受管文件：bash uninstall.sh' \
+    '详细说明：opencode/README.md' >&2
 exit 1
