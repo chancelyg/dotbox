@@ -20,7 +20,7 @@
 - `global/AGENTS.md`：供 OpenCode 与 Pi 安装的共同规则。
 - 根 `skills/`：四个工作方法 Skills 和专项技能及支持文件，不定义独立子代理。
 - `opencode/agents/`：仅 Coding、Ops 主模式；`opencode/*.sh` 只管理 OpenCode。
-- `pi/install.sh`、`pi/uninstall.sh`：只管理 Pi 全局规则与 Skills；安装脚本重跑即更新，允许接管与源内容完全一致的非受管副本。详细边界见 `pi/README.md`。
+- `pi/install.sh`、`pi/uninstall.sh`：只管理 Pi 全局规则、Skills 和 `pi/extensions/status.ts` 状态栏；安装脚本重跑即更新，允许接管与源内容完全一致的非受管副本。详细边界见 `pi/README.md`。
 - `opencode/commands/dotbox.md`：项目定位命令，不绑定固定代理或模型。
 - `opencode/cli.json`、`opencode/opencode.json(c)`、`opencode/plugins/`：独立选用的配置和插件，不由三个脚本整套安装。
 - `codex/`、`kitty/`：其他工具配置，只在用户明确要求时处理。

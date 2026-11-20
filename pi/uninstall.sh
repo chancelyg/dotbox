@@ -21,11 +21,11 @@ check_path "$manifest"
 files=()
 while IFS= read -r name || [[ -n $name ]]; do
     [[ $name != /* && $name != *..* ]] || die '安装清单含非法路径'
-    case "$name" in AGENTS.md|skills/*|licenses/*) ;; *) die '安装清单含非标准路径' ;; esac
+    case "$name" in AGENTS.md|skills/*|licenses/*|extensions/status.ts) ;; *) die '安装清单含非标准路径' ;; esac
     check_path "$target/$name"
     [[ ! -e $target/$name || -f $target/$name ]] || die "目标不是普通文件：$name"
     files+=("$name")
 done < "$manifest"
 for name in ${files[@]+"${files[@]}"}; do rm -f -- "$target/$name"; done
 rm -- "$manifest"
-printf '已卸载 Pi 的 dotbox 规则与 Skills；个人配置和其他文件保留。请运行 /reload。\n'
+printf '已卸载 Pi 的 dotbox 规则、Skills 和状态栏；个人配置和其他文件保留。请运行 /reload。\n'

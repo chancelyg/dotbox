@@ -1,6 +1,6 @@
 # Pi 配置
 
-使用 Pi 原生全局规则与 Agent Skills，不定义自有 agent 格式、不安装子代理或模式切换扩展，也不需要 Pi Package。
+使用 Pi 原生全局规则、Agent Skills 和单行状态栏扩展，不定义自有 agent 格式、不安装子代理或模式切换扩展，也不需要 Pi Package。
 
 ## 全局来源与目标
 
@@ -12,6 +12,7 @@
 | `skills/<名称>/` | `skills/<名称>/` |
 | `skills/THIRD_PARTY_NOTICES.md` | `licenses/THIRD_PARTY_NOTICES.md` |
 | `skills/LICENSES/` | `licenses/LICENSES/` |
+| `pi/extensions/status.ts` | `extensions/status.ts` |
 
 不安装仓库根的开发规则，不复制 OpenCode 主代理、配置或命令。不修改 `settings.json`、`auth.json`、模型、MCP 或会话。
 
@@ -46,6 +47,24 @@ less -- "${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/.dotbox-files"
 ```
 
 脚本面向 macOS / Linux 的 Bash，修改后运行 `bash -n pi/install.sh pi/uninstall.sh`，并在临时 `PI_CODING_AGENT_DIR` 下验证，不用真实配置测试卸载。
+
+## 单行状态栏
+
+`extensions/status.ts` 替换 Pi 原生 footer，只在 TUI 模式运行。示例：
+
+```text
+◎ GPT-5.6 Sol ⚡️ medium 📁 github/dotbox 📊 24k / 200k (12%) · CPU 8% / RAM 42%
+```
+
+- 使用当前模型显示名和实际思考等级；厂商采用 Unicode 近似标识（OpenAI `◎`、Anthropic `✳`、Google `✦`、DeepSeek `≈`），其他 provider 显示名称，不依赖 Nerd Font，也不使用图片 logo。
+- `⚡️` 标记思考等级，`📁` 标记路径，`📊` 标记上下文；路径只显示最后两层。空间不足时依次缩为一层路径、隐藏 CPU/RAM、隐藏路径、隐藏思考等级，最后截断模型名。极窄窗口只显示上下文，始终保持单行。
+- 模型使用主题强调色，路径与标签弱化；百分比达到 70% 显示警告色，90% 显示错误色。随 Pi 主题更新，不使用固定背景色。
+- 上下文显示 `已用 Token / 容量 (占用百分比)`，使用 Pi 原生统计；Token 统一以 k 为单位，最多保留一位小数。压缩后已用量未知时显示 `?`，容量可回退到模型声明；不是累计 Token 或订阅额度。
+- CPU 是两次采样间的系统整体使用率；RAM 是 `(total - free) / total`。每 2 秒采样，首个 CPU 样本未知时显示 `?`。macOS 缓存和压缩内存会影响口径，RAM 数值不等于系统内存压力。
+- SSH 场景采样的是远程运行环境，不是本地 Mac；容器内指标受 Node/系统可见范围影响，不宣称是容器配额占用。
+- 不联网、不读凭证、不启动子进程。扩展卸载、会话切换或 `/reload` 时清理定时器。
+
+替换后不再显示原生 footer 的 Git 分支、费用、Token 明细或其他扩展状态。不要同时启用另一个替换 footer 的扩展；如需临时恢复原生 footer，可在 Pi 资源配置中禁用本扩展，再运行 `/reload`。
 
 ## 使用
 

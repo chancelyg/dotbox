@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 安装或更新 Pi 共同规则与 Skills；不修改个人设置，不联网。
+# 安装或更新 Pi 共同规则、Skills 和单行状态栏；不修改个人设置，不联网。
 set -euo pipefail
 [[ $# == 0 ]] || { echo '用法：bash pi/install.sh' >&2; exit 1; }
 repo=$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
@@ -17,15 +17,15 @@ check_path() {
 }
 valid() {
     [[ $1 != /* && $1 != *..* && $1 != *$'\n'* ]] || return 1
-    case "$1" in AGENTS.md|skills/*|licenses/*) return 0 ;; *) return 1 ;; esac
+    case "$1" in AGENTS.md|skills/*|licenses/*|extensions/status.ts) return 0 ;; *) return 1 ;; esac
 }
 [[ -n $target && $target != "$repo" && $target != "$repo/"* && $repo != "$target/"* ]] || die '配置与源码目录不能重叠或使用根目录'
 check_path "$manifest"
 [[ ! -e $manifest || -f $manifest ]] || die '安装清单不是普通文件'
 [[ ! -e $target/AGENTS.override.md && ! -L $target/AGENTS.override.md ]] || die '已有 AGENTS.override.md 会遮蔽全局规则，请先处理'
 [[ -d $repo/skills ]] || die '缺少技能源目录'
-files=(AGENTS.md)
-sources=("$repo/global/AGENTS.md")
+files=(AGENTS.md extensions/status.ts)
+sources=("$repo/global/AGENTS.md" "$repo/pi/extensions/status.ts")
 while IFS= read -r -d '' source; do
     name=${source#"$repo/"}
     case "$name" in
