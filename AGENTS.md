@@ -1,6 +1,6 @@
 # 仓库定位
 
-- dotbox 保存个人可公开分享的配置，以及 OpenCode 标准代理、规则、技能和分发脚本。它是配置仓库，不是需要平台化的应用项目。
+- dotbox 保存个人可公开分享的配置、OpenCode / Pi 共享规则和技能，以及客户端专用配置和分发脚本。它是配置仓库，不是需要平台化的应用项目。
 - 使用中文交流。优先采用满足需求的最简实现，严格遵守用户指定的文件和任务范围。
 - 配置源文件保留应用原生格式及路径层级，不随意改名、扁平化或按主题重新组织。新配置的路径起点不明确时先询问。
 - 不提交凭证、私钥、Token、私有主机信息、机器状态、缓存、日志或备份；公开示例使用明确占位符，个人覆盖留在仓库外。
@@ -17,8 +17,10 @@
 # 目录与职责
 
 - 根 `AGENTS.md`：本仓库的开发约定，不是客户端全局规则的安装源。
-- `opencode/AGENTS.md`：供客户端安装的共同规则。
-- `opencode/agents/`：Coding、Ops 主模式，Discuss、Investigator、Planner、Reviewer 子代理；`opencode/skills/`：专项技能及支持文件。
+- `global/AGENTS.md`：供 OpenCode 与 Pi 安装的共同规则。
+- 根 `skills/`：四个工作方法 Skills 和专项技能及支持文件，不定义独立子代理。
+- `opencode/agents/`：仅 Coding、Ops 主模式；`opencode/*.sh` 只管理 OpenCode。
+- `pi/README.md`：Pi 原生全局规则和 Skills 的安装、更新与使用说明。
 - `opencode/commands/dotbox.md`：项目定位命令，不绑定固定代理或模型。
 - `opencode/cli.json`、`opencode/opencode.json(c)`、`opencode/plugins/`：独立选用的配置和插件，不由三个脚本整套安装。
 - `codex/`、`kitty/`：其他工具配置，只在用户明确要求时处理。
@@ -26,7 +28,7 @@
 
 # 当前安装与更新方式
 
-以实际脚本为准，默认目标是 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode`：
+OpenCode 脚本位于 `opencode/`，以实际脚本为准，默认目标是 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode`。从 `global/AGENTS.md` 和根 `skills/` 读取共享源；Pi 安装另见 `pi/README.md`，不由这些脚本管理：
 
 - `setup.sh`：复制共同规则、代理、全部技能及 `/dotbox`，用目标目录中的 `.dotbox-files` 记录受管文件路径。同名非受管文件会阻止安装，不自动认领或合并。
 - `update.sh`：调用 setup 的更新流程，从当前本地克隆同步受管文件并删除退役项；不自动 `git pull`，不安装定时任务。
@@ -46,10 +48,10 @@
 # 验证与文档
 
 - 本仓库没有统一的包管理、构建或测试任务。不为配置修改默认安装依赖、建立测试平台或启动服务。
-- 修改 Shell 脚本后运行 `bash -n setup.sh update.sh uninstall.sh install.sh`；交付前运行 `git diff --check` 并核对最终修改范围。
+- 修改 Shell 脚本后运行 `bash -n opencode/setup.sh opencode/update.sh opencode/uninstall.sh opencode/install.sh`；交付前运行 `git diff --check` 并核对最终修改范围。
 - 需要验证安装、更新、卸载时，使用隔离的临时 HOME / XDG 目录，检查受管文件和个人文件的保留情况。未经明确授权，不对真实全局配置或其他项目执行安装、卸载或迁移。
 - 配置和插件变更按实际涉及的工具进行针对性验证；静态检查通过不等于 OpenCode 已加载，更不等于代理行为已经验证。检查有效配置时只展示必要字段，不输出私有设置。
-- 根 README 用于导航，`opencode/README.md` 保留详细说明。当前两份 README 及 `install.sh` 的提示仍有旧 `/onboard`、项目化引入和 `--apply` 流程，不能用这些旧描述替代实际脚本；后续文档修正须遵守当次授权范围。
+- 根 README 用于导航，`opencode/README.md` 和 `pi/README.md` 分别保留客户端说明。修改共享规则或 Skills 时核对两端适用性，不加入专属工具或不存在的权限机制。
 
 # 历史依据
 
