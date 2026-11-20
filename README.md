@@ -23,7 +23,11 @@ bash "$HOME/.dotbox/opencode/setup.sh"
 
 ## Pi
 
-将共同规则安装到 `${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/AGENTS.md`，Skills 安装到该目录的 `skills/`。详细冲突检查、复制与更新方法见 [Pi 说明](pi/README.md)。不需要 `package.json`，不覆盖个人模型、认证、MCP 或设置。
+```bash
+bash "$HOME/.dotbox/pi/install.sh"
+```
+
+共同规则和 Skills 安装到 `${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}`。更新本地克隆后重跑安装脚本；卸载使用 `pi/uninstall.sh`。脚本按 `.dotbox-files` 清单管理文件，详细冲突与接管规则见 [Pi 说明](pi/README.md)。不需要 `package.json`，不覆盖个人模型、认证、MCP 或设置。
 
 ## 公开范围
 

@@ -17,25 +17,35 @@
 
 ## 安装与更新
 
-本目录不提供安装管理脚本。先检查目标目录及父路径没有符号链接，核对全局规则和同名 Skills 是否已存在；同名个人文件应先决定如何保留或合并，不能直接覆盖。还需核对 `~/.agents/skills/` 和项目技能是否有同名定义，避免重复发现。
-
-同目录若存在 `AGENTS.override.md`，它会遮蔽 `AGENTS.md`。其他候选规则如 `CLAUDE.md` 也应先核对，不能只凭复制成功认定规则已生效。
-
-**确认目标为空，或已有副本明确归属 dotbox 且允许覆盖后**，在仓库根执行：
+在仓库根执行，或从任意目录使用脚本的绝对路径：
 
 ```bash
-target=${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}
-mkdir -p "$target/skills" "$target/licenses"
-cp global/AGENTS.md "$target/AGENTS.md"
-for skill in skills/*/; do
-    [ -f "$skill/SKILL.md" ] || continue
-    cp -R "${skill%/}" "$target/skills/"
-done
-cp skills/THIRD_PARTY_NOTICES.md "$target/licenses/"
-cp -R skills/LICENSES "$target/licenses/"
+bash pi/install.sh
 ```
 
-更新先审阅本地克隆差异，再按上述方式同步。复制不会自动删除退役文件；退役项或卸载须逐项核对来源后删除，不清空全局 `skills/` 或个人配置目录。受管副本不作为个人定制来源，项目差异记录在项目规则中。
+更新时先自行更新并审阅本地克隆，再运行同一条命令。不自动 `git pull`，不联网，不安装 Pi 程序。
+
+- 使用目标目录的 `.dotbox-files` 记录受管文件；重跑覆盖受管副本，并删除清单中的退役文件。
+- 同名非受管文件只有与源文件内容完全一致时才接管，兼容此前手动复制的副本。接管后更新会覆盖、卸载会删除；不希望受管的同名文件应先自行处理。
+- 同名文件内容不同则停止，不自动合并；拒绝符号链接路径、非普通文件目标及源码目录与目标重叠。
+- 存在 `AGENTS.override.md` 时停止安装，避免全局规则被遮蔽。其他候选规则如 `CLAUDE.md`、`~/.agents/skills/` 和项目内同名技能仍需自行核对。
+- 受管副本不保留人工定制，清单没有内容基线、备份或回退功能。项目差异保存在项目规则中。
+
+## 卸载
+
+```bash
+bash pi/uninstall.sh
+```
+
+直接删除 `.dotbox-files` 清单内的文件及清单，保留空目录、个人配置和其他文件。受管文件即使被人工修改也会删除。没有清单时不处理；此前手动安装的副本须先运行安装脚本接管，才能按清单卸载。
+
+两个脚本都没有预览或 `--apply` 模式。运行前如需核对已有受管范围，可查看：
+
+```bash
+less -- "${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/.dotbox-files"
+```
+
+脚本面向 macOS / Linux 的 Bash，修改后运行 `bash -n pi/install.sh pi/uninstall.sh`，并在临时 `PI_CODING_AGENT_DIR` 下验证，不用真实配置测试卸载。
 
 ## 使用
 

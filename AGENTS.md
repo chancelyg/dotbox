@@ -20,7 +20,7 @@
 - `global/AGENTS.md`：供 OpenCode 与 Pi 安装的共同规则。
 - 根 `skills/`：四个工作方法 Skills 和专项技能及支持文件，不定义独立子代理。
 - `opencode/agents/`：仅 Coding、Ops 主模式；`opencode/*.sh` 只管理 OpenCode。
-- `pi/README.md`：Pi 原生全局规则和 Skills 的安装、更新与使用说明。
+- `pi/install.sh`、`pi/uninstall.sh`：只管理 Pi 全局规则与 Skills；安装脚本重跑即更新，允许接管与源内容完全一致的非受管副本。详细边界见 `pi/README.md`。
 - `opencode/commands/dotbox.md`：项目定位命令，不绑定固定代理或模型。
 - `opencode/cli.json`、`opencode/opencode.json(c)`、`opencode/plugins/`：独立选用的配置和插件，不由三个脚本整套安装。
 - `codex/`、`kitty/`：其他工具配置，只在用户明确要求时处理。
@@ -28,7 +28,7 @@
 
 # 当前安装与更新方式
 
-OpenCode 脚本位于 `opencode/`，以实际脚本为准，默认目标是 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode`。从 `global/AGENTS.md` 和根 `skills/` 读取共享源；Pi 安装另见 `pi/README.md`，不由这些脚本管理：
+OpenCode 脚本位于 `opencode/`，以实际脚本为准，默认目标是 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode`。从 `global/AGENTS.md` 和根 `skills/` 读取共享源；Pi 由 `pi/install.sh`、`pi/uninstall.sh` 单独管理，使用 `${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}` 下的清单，另见 `pi/README.md`：
 
 - `setup.sh`：复制共同规则、代理、全部技能及 `/dotbox`，用目标目录中的 `.dotbox-files` 记录受管文件路径。同名非受管文件会阻止安装，不自动认领或合并。
 - `update.sh`：调用 setup 的更新流程，从当前本地克隆同步受管文件并删除退役项；不自动 `git pull`，不安装定时任务。
@@ -48,7 +48,7 @@ OpenCode 脚本位于 `opencode/`，以实际脚本为准，默认目标是 `${X
 # 验证与文档
 
 - 本仓库没有统一的包管理、构建或测试任务。不为配置修改默认安装依赖、建立测试平台或启动服务。
-- 修改 Shell 脚本后运行 `bash -n opencode/setup.sh opencode/update.sh opencode/uninstall.sh opencode/install.sh`；交付前运行 `git diff --check` 并核对最终修改范围。
+- 修改 Shell 脚本后运行 `bash -n opencode/setup.sh opencode/update.sh opencode/uninstall.sh opencode/install.sh pi/install.sh pi/uninstall.sh`；交付前运行 `git diff --check` 并核对最终修改范围。
 - 需要验证安装、更新、卸载时，使用隔离的临时 HOME / XDG 目录，检查受管文件和个人文件的保留情况。未经明确授权，不对真实全局配置或其他项目执行安装、卸载或迁移。
 - 配置和插件变更按实际涉及的工具进行针对性验证；静态检查通过不等于 OpenCode 已加载，更不等于代理行为已经验证。检查有效配置时只展示必要字段，不输出私有设置。
 - 根 README 用于导航，`opencode/README.md` 和 `pi/README.md` 分别保留客户端说明。修改共享规则或 Skills 时核对两端适用性，不加入专属工具或不存在的权限机制。
