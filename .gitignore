@@ -1,3 +1,13 @@
+# Only shared content and repository maintenance files belong at the root
+/*
+!/.gitignore
+!/AGENTS.md
+!/README.md
+!/global/
+!/skills/
+!/THIRD_PARTY_NOTICES.md
+!/LICENSES/
+
 # Secrets and local overrides
 .env
 .env.*
@@ -15,10 +25,6 @@
 **/*.pid
 **/*.sock
 
-# Repository-local workflow tooling
-/.opencode/
-/openspec/
-
 # Editor, OS, and backup files
 .DS_Store
 Thumbs.db
@@ -27,7 +33,3 @@ Thumbs.db
 **/*~
 **/*.bak
 **/*.backup
-
-# kitty
-current-theme.conf
-.opencode*
