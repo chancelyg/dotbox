@@ -1,67 +1,17 @@
----
-description: 面向普通代码仓库的开放自主代理，默认使用 Worktree 完成开发、测试、审查、提交和受授权的合并推送任务。
-mode: primary
-color: "#2fff00"
-steps: 120
-permissions:
-  - { action: "*", resource: "*", effect: allow }
-  - { action: read, resource: "*", effect: allow }
-  - { action: read, resource: "*.env", effect: deny }
-  - { action: read, resource: "*.env.*", effect: deny }
-  - { action: read, resource: "**/.env", effect: deny }
-  - { action: read, resource: "**/.env.*", effect: deny }
-  - { action: read, resource: "*.pem", effect: deny }
-  - { action: read, resource: "*.key", effect: deny }
-  - { action: read, resource: "**/id_rsa", effect: deny }
-  - { action: read, resource: "**/id_ed25519", effect: deny }
-  - { action: read, resource: "**/secrets/**", effect: deny }
-  - { action: read, resource: "*.env.example", effect: allow }
-  - { action: read, resource: "**/.env.example", effect: allow }
-  - { action: edit, resource: "*", effect: allow }
-  - { action: glob, resource: "*", effect: allow }
-  - { action: grep, resource: "*", effect: allow }
-  - { action: list, resource: "*", effect: allow }
-  - { action: skill, resource: "*", effect: allow }
-  - { action: subagent, resource: "*", effect: allow }
-  - { action: todowrite, resource: "*", effect: allow }
-  - { action: question, resource: "*", effect: allow }
-  - { action: webfetch, resource: "*", effect: allow }
-  - { action: websearch, resource: "*", effect: allow }
-  - { action: external_directory, resource: "*", effect: allow }
-  - { action: shell, resource: "*", effect: allow }
-  - { action: shell, resource: "shutdown*", effect: deny }
-  - { action: shell, resource: "reboot*", effect: deny }
-  - { action: shell, resource: "halt*", effect: deny }
-  - { action: shell, resource: "poweroff*", effect: deny }
-  - { action: shell, resource: "mkfs*", effect: deny }
-  - { action: shell, resource: "dd *of=/dev/*", effect: deny }
-  - { action: shell, resource: "curl *|*sh*", effect: deny }
-  - { action: shell, resource: "wget *|*sh*", effect: deny }
-  - { action: shell, resource: "rm *-rf* /*", effect: deny }
-  - { action: shell, resource: "rm *-fr* /*", effect: deny }
-  - { action: shell, resource: "rm *-rf* /", effect: deny }
-  - { action: shell, resource: "rm *-fr* /", effect: deny }
-  - { action: shell, resource: "rm * /", effect: deny }
-  - { action: shell, resource: "cd /;*rm*", effect: deny }
-  - { action: shell, resource: "cd / *;*rm*", effect: deny }
-  - { action: shell, resource: "chmod *-R* 000*", effect: deny }
-  - { action: shell, resource: "chown *-R* * /", effect: deny }
-  - { action: shell, resource: ":(){:|:&};:*", effect: deny }
----
-# Coding 模式
+# 代码仓库开发流程参考
 
-你是自主的高级工程师，以测试和产物交付。共同原则遵循 `AGENTS.md`，本文件规定开发与 Git 流程。
+本文件供初始化代码仓库时参考，不是全局规则，不会自动加载。先调查仓库用途、工具链和已有约定，再选取适用流程，结合实际命令写入该仓库的 `AGENTS.md` 或其明确引用的文档。保留已有定制；例如原地开发的仓库不必采用下文 Worktree 流程。
+
+初始化后的流程由目标仓库维护，不随本文件更新自动改变。以下为可采用的开发与 Git 流程，不提供客户端权限配置。
 
 ## 1. 授权与安全
 
 提交、合并、推送和部署须有用户授权。
 
-
-
 ## 2. 项目上下文与工作区
 
 工作区遵循以下原则：
-* 优先级上遵循：`AGENTS.md` > `项目/docs` 参考文档 > 本文件，如有矛盾或冲突，请求用户明确指示。
+* 项目 `AGENTS.md` 及其明确引用的约定优先于本参考；无法确定冲突含义时询问用户。
 
 仓库的工作模式遵循 Git WorkTree 模式，即：
 1. 普通开发默认使用 `linked worktree` 模式，除非 `AGENTS.md` 或用户明确授权例外。
@@ -84,7 +34,7 @@ Plan 要遵循以下规则：
 1. Plan 的设计应细致，调查充分，确保每一步都有明确的依据和可验证的结果。
 2. 形成 Plan 前，按需使用 `investigate` 补齐关键依据。简单事实自行核实，不为形式拆分任务，不将未完成的关键调查包装成实施步骤。
 3. Plan 须展示并等待用户明确确认后方可执行，Plan 说明要详略得当，不长篇大论，杜绝信息密度低，不额外关联，不黑话，不夸大，不猜测，不臆测。
-4. Plan 应明确每一步的输入、输出和责任，确保用户能够理解和确认整个执行流程。 
+4. Plan 应明确每一步的输入、输出和责任，确保用户能够理解和确认整个执行流程。
 
 ## 4. 开发验证
 

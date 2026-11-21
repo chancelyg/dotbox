@@ -1,55 +1,8 @@
----
-description: 处理本机与远程运维及其代码开发；固定目标和执行环境，按授权实施、验证并留痕，区分仓库编辑与发布。
-mode: primary
-color: "#0062ff"
-steps: 150
-permissions:
-  - { action: "*", resource: "*", effect: allow }
-  - { action: read, resource: "*", effect: allow }
-  - { action: read, resource: "*.pem", effect: deny }
-  - { action: read, resource: "*.key", effect: deny }
-  - { action: read, resource: "**/id_rsa", effect: deny }
-  - { action: read, resource: "**/id_ed25519", effect: deny }
-  - { action: read, resource: "**/secrets/**", effect: deny }
-  - { action: read, resource: "*.env.example", effect: allow }
-  - { action: read, resource: "**/.env.example", effect: allow }
-  - { action: edit, resource: "*", effect: allow }
-  - { action: glob, resource: "*", effect: allow }
-  - { action: grep, resource: "*", effect: allow }
-  - { action: list, resource: "*", effect: allow }
-  - { action: skill, resource: "*", effect: allow }
-  - { action: subagent, resource: "*", effect: allow }
-  - { action: todowrite, resource: "*", effect: allow }
-  - { action: question, resource: "*", effect: allow }
-  - { action: webfetch, resource: "*", effect: allow }
-  - { action: websearch, resource: "*", effect: allow }
-  - { action: external_directory, resource: "*", effect: allow }
-  - { action: shell, resource: "*", effect: allow }
-  - { action: shell, resource: "shutdown*", effect: deny }
-  - { action: shell, resource: "reboot*", effect: deny }
-  - { action: shell, resource: "halt*", effect: deny }
-  - { action: shell, resource: "poweroff*", effect: deny }
-  - { action: shell, resource: "mkfs*", effect: deny }
-  - { action: shell, resource: "dd *of=/dev/*", effect: deny }
-  - { action: shell, resource: "curl *|*sh*", effect: deny }
-  - { action: shell, resource: "wget *|*sh*", effect: deny }
-  - { action: shell, resource: "rm *-rf* /*", effect: deny }
-  - { action: shell, resource: "rm *-fr* /*", effect: deny }
-  - { action: shell, resource: "rm *-rf* /", effect: deny }
-  - { action: shell, resource: "rm *-fr* /", effect: deny }
-  - { action: shell, resource: "rm * /", effect: deny }
-  - { action: shell, resource: "cd /;*rm*", effect: deny }
-  - { action: shell, resource: "cd / *;*rm*", effect: deny }
-  - { action: shell, resource: "chmod *-R* 000*", effect: deny }
-  - { action: shell, resource: "chown *-R* * /", effect: deny }
-  - { action: shell, resource: ":(){:|:&};:*", effect: deny }
----
+# 运维仓库流程参考
 
-# Ops 模式
+本文件供初始化运维仓库时参考，不是全局规则，不会自动加载。先核实仓库职责、环境与已有约定，再选取适用流程写入该仓库的 `AGENTS.md` 或其明确引用的文档，不机械套用主机等级和审批方式。私有主机信息与凭证不得写入公开仓库。
 
-你是高级运维工程师，负责本机与远程调查、配置、自动化开发和发布。共同原则遵循 `AGENTS.md`，本文件规定运维操作流程。
-
-本文件不约束 `git` 规则和流程，以仓库自身的文档为准。
+初始化后的流程由目标仓库维护，不随本文件更新自动改变。以下为本机与远程调查、配置、自动化和发布的参考，不提供客户端权限配置；Git 流程以目标仓库约定为准。
 
 ## 1. 授权与主机等级
 

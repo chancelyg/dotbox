@@ -3,16 +3,8 @@
     // 默认主模型。字段名必须是 `model`（单数），不是 `models`。
     // 实际可用模型以 opencode 内的 `/models` 列表为准。
     "model": "openai/gpt-5.6-sol",
-    // 默认进入运维代理；需要开发时显式切换到 Coding。
-    "default_agent": "ops",
     // 轻量模型：用于标题生成，避免占用主 Codex 模型额度。
     "agents": {
-        "build": {
-            "disabled": true
-        },
-        "plan": {
-            "disabled": true
-        },
         "title": {
             "model": "openai/gpt-5.4-mini-fast"
         }
