@@ -1,12 +1,12 @@
 # dotbox
 
-个人可公开分享的配置。OpenCode 与 Pi 共用全局规则和 Skills，客户端只保留原生配置与扩展。
+dotbox 保存可公开分享的配置、AI CLI 共同规则、Skills 和仓库流程参考；不是应用项目。
 
 ## 内容
 
 | 路径 | 用途 |
 | --- | --- |
-| [`global/AGENTS.md`](global/AGENTS.md) | 两端共用的全局规则 |
+| [`global/AGENTS.md`](global/AGENTS.md) | AI CLI 共用的全局规则 |
 | [`skills/`](skills/) | 讨论、调查、规划、方案复核及专项技能 |
 | [`docs/coding.md`](docs/coding.md) / [`docs/ops.md`](docs/ops.md) | 代码 / 运维仓库初始化参考 |
 | [`opencode/`](opencode/README.md) | 可选配置与插件，使用原生 Build / Plan |
@@ -22,7 +22,7 @@
 首次使用可跳过。有过旧脚本安装时，先在仓库根运行：
 
 ```bash
-bash clean.sh          # 查看两端旧 .dotbox-files 清单中的删除对象
+bash clean.sh          # 查看 OpenCode / Pi 旧清单中的删除对象
 bash clean.sh --apply  # 确认并保存需要保留的副本后执行
 ```
 
@@ -30,44 +30,47 @@ bash clean.sh --apply  # 确认并保存需要保留的副本后执行
 
 旧个人配置或项目配置中的 `default_agent: coding/ops`、Build / Plan 禁用项需自行移除；非受管旧代理及同名技能也需核对，避免遮蔽共享内容。
 
-## 软链安装
+## 配置
 
-先克隆到稳定路径，然后在仓库根执行下列 Bash 命令。两端自动发现 `~/.agents/skills`，无需各装一份。
+将仓库克隆到稳定路径。以下 `/绝对路径/dotbox` 请替换为实际路径；配置项合并到已有文件，数组追加，不覆盖个人设置。支持配置技能路径的 AI CLI 可直接读取仓库中的 Skills，无需复制或占用 `~/.agents/skills`。以下以 OpenCode 和 Pi 为接入示例，其他工具按其原生加载机制配置。
 
-```bash
-repo=$(pwd -P)
-opencode=${XDG_CONFIG_HOME:-$HOME/.config}/opencode
-pi=${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}
+### OpenCode
 
-link() {
-    if [ -L "$2" ] && [ "$(readlink "$2")" = "$1" ]; then
-        return 0
-    fi
-    if [ -e "$2" ] || [ -L "$2" ]; then
-        printf '目标已存在，请先核对处理：%s\n' "$2" >&2
-        return 1
-    fi
-    ln -s "$1" "$2"
+在全局配置 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/opencode.jsonc`（已有 `opencode.json` 时沿用）中添加：
+
+```json
+{
+  "instructions": ["/绝对路径/dotbox/global/AGENTS.md"],
+  "skills": ["/绝对路径/dotbox/skills"]
 }
-
-# 在子 shell 中遇错即停；不覆盖已有文件或目录。
-(
-    set -e
-    mkdir -p "$opencode" "$pi" "$HOME/.agents"
-    link "$repo/global/AGENTS.md" "$opencode/AGENTS.md"
-    link "$repo/global/AGENTS.md" "$pi/AGENTS.md"
-    link "$repo/skills" "$HOME/.agents/skills"
-)
 ```
 
-`~/.agents/skills` 若已存在，先自行保存和整理其内容；不要强制覆盖或递归删除。客户端原有同名技能副本需移除或另行处理，避免不同发现优先级导致两端加载不同版本。Pi 若存在 `AGENTS.override.md`，也需先核对是否遮蔽全局规则。
+`instructions` 是追加加载，不替换自动发现的规则。若此前已将同一份规则链接到 OpenCode 的全局 `AGENTS.md`，核实后移除该链接，避免重复加载；不要删除其他个人规则。
 
-安装仅共享指令，不统一权限、模型、MCP 或会话。OpenCode 的代理权限不会迁移为 Pi 的执行限制。可选状态栏见 [Pi 说明](pi/README.md)。
+### Pi
+
+在 `${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/settings.json` 中添加：
+
+```json
+{
+  "skills": ["/绝对路径/dotbox/skills"]
+}
+```
+
+Pi 没有对应的 `instructions` 配置项。将 `${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/AGENTS.md` 作为单文件软链，指向仓库的 `global/AGENTS.md`。目标已有文件时先核对并保留个人内容，不强制覆盖；同目录的 `AGENTS.override.md` 会优先加载，也需检查。
+
+可选状态栏可通过 Pi `settings.json` 的 `extensions` 数组添加 `/绝对路径/dotbox/pi/extensions/status.ts`，无需安装脚本或软链；不要同时保留它的旧安装副本。
+
+### 避免重复加载
+
+保留 `~/.agents/skills` 中的私人技能。若此前建立了指向本仓库 `skills/` 的整目录链接，核实后仅移除该链接。客户端旧目录中的同名技能副本也需核对处理，避免不同 CLI 因发现优先级不同而加载不同版本。
+
+这些配置只共享指令，不统一权限、模型、MCP 或会话。OpenCode 的代理权限不会迁移为 Pi 的执行限制。
 
 ## 更新与移除
 
-在仓库执行 `git pull` 即更新软链源，无需同步脚本。Pi 运行 `/reload`；OpenCode 必要时重载配置或新建会话，并核对加载结果。修改仓库源文件会直接影响后续加载，不存在额外安装隔离。
+在仓库执行 `git pull` 即更新共享内容，无需同步脚本。Pi 运行 `/reload`；OpenCode 必要时重载配置或新建会话，并核对加载结果。修改仓库源文件会直接影响后续加载。
 
-移除时先用 `readlink` 核实链接指向，再仅删除链接本身；不要删除目标仓库内容。`clean.sh` 只处理旧安装，不负责新链接卸载。
+移除时，仅从客户端配置中删除本仓库对应的路径条目；Pi 的规则软链先用 `readlink` 核实，再仅删除链接本身。不要删除个人配置或目标仓库内容。`clean.sh` 只处理旧清单安装。
 
-不保存凭证或私有机器信息。第三方来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。共享路径依据 OpenCode V2 与 Pi 1.5.2 文档；文件可读不代表模型必定按预期执行。
+不保存凭证或私有机器信息。第三方来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。接入示例依据 OpenCode V2 与 Pi 1.5.2 文档；文件可读不代表模型必定按预期执行。

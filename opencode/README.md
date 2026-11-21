@@ -1,6 +1,6 @@
 # OpenCode
 
-全局规则和 Skills 与 Pi 共用，清理旧安装及软链命令见[根 README](../README.md)。使用原生 Build / Plan，不再分发 Coding / Ops 代理或 `/dotbox` 命令。
+使用共享的 AI CLI 全局规则和 Skills，旧安装清理及 `instructions`、`skills` 路径配置见[根 README](../README.md)。使用原生 Build / Plan，不再分发 Coding / Ops 代理或 `/dotbox` 命令。
 
 本目录仅保留独立选用的内容：
 
